@@ -7,7 +7,7 @@ Checkout: `detached at origin/main`; dirty state: `clean`
 Analysis: `pinned-source, read-only`; target code was not executed.  
 Attribution: `project-only` — confirm the candidate's contribution before using personal verbs.
 
-## 简历草稿
+## 当前证据版（证据可用）
 
 **TestZeus Hercules｜自然语言驱动的端到端测试 Agent**
 
@@ -19,6 +19,26 @@ Attribution: `project-only` — confirm the candidate's contribution before usin
 2. 项目为 Agent 执行建立显式终止边界：导航轮次耗尽时返回带错误标记的结果，执行步骤只有在收到终止标记且不含已知失败信号时才记为完成。
 3. 项目将解析后的 Gherkin 场景结果、执行时间和成本写入 JUnit XML，再由 XML 生成 HTML 报告，并关联截图、视频、网络日志和运行日志，形成机器可读报告与运行证据包。
 4. 项目同时支持消费 MCP 工具与作为 MCP 服务暴露 Gherkin 生成、测试执行和结果读取接口，并对生成与执行子进程设置有界超时。
+
+## 指标增强版（推荐目标，待实测，不可投递）
+
+**TestZeus Hercules｜自然语言驱动的端到端测试 Agent**
+
+**核心技术：** Python、LangGraph、Playwright、Gherkin / BDD、MCP、JUnit
+
+**项目描述：** 面向 Web 测试脚本维护成本高、执行路径跨 UI/API/安全与外部工具的问题，项目将 Gherkin 场景交给规划 Agent 分解，并路由至专用执行 Agent，最终沉淀机器可读结果和浏览器证据。
+
+1. 针对单一 Agent 在跨 UI、API、安全与 SQL 场景中规划不稳的问题，采用 planner、executor 与专用 Agent 的图编排；在 [待实测：Gherkin 场景数] 个冻结场景上，相较单 Agent 基线将通过数从 [待实测：单 Agent 通过数] 提升至 [待实测：图编排通过数]，同时将单任务成本从 [待实测：单 Agent 单任务成本] 控制为 [待实测：图编排单任务成本]。
+2. 针对模型输出文本可能被误判为任务成功的问题，建立终止标记、失败信号与导航轮次上限；在 [待实测：异常终止 Case 数] 个故障 Case 上，相较仅依据最终文本的基线，将误报成功率从 [待实测：文本判定误报成功率] 降至 [待实测：终止逻辑误报成功率]。
+3. 针对外部 Agent 通过 MCP 调用测试能力时的互操作与超时问题，在 [待实测：MCP 互操作 Case 数] 个冻结调用上，相较直接 CLI 基线达到 [待实测：MCP 端到端通过率] 的任务通过率，P95 额外开销为 [待实测：MCP P95 额外开销]，超时结果正确分类率为 [待实测：超时正确分类率]。
+
+## 指标验证计划
+
+| Claim | Values to fill | Baseline | Frozen workload and sample | Metric and success gate | Artifact |
+| --- | --- | --- | --- | --- | --- |
+| 多 Agent 图编排 | [待实测：Gherkin 场景数], [待实测：单 Agent 通过数], [待实测：图编排通过数], [待实测：单 Agent 单任务成本], [待实测：图编排单任务成本] | 同模型、同工具、同预算的单 Agent 执行器 | 固定 Gherkin 场景、模型、浏览器、工具目录与重试规则 | Verifier-backed 通过数提升；成本变化只在成功率不下降时可写 | run manifest、provider journal、proof bundle、verdict |
+| 终止正确性 | [待实测：异常终止 Case 数], [待实测：文本判定误报成功率], [待实测：终止逻辑误报成功率] | 仅依据最终文本判断成功 | 空摘要、不可解析摘要、工具错误、轮次耗尽与正常终止 Case | 误报成功率下降；正常完成不得被误拒绝 | 逐 Case terminal state、JUnit、自动 verifier 结果 |
+| MCP 互操作 | [待实测：MCP 互操作 Case 数], [待实测：MCP 端到端通过率], [待实测：MCP P95 额外开销], [待实测：超时正确分类率] | 相同任务直接通过 CLI 调用 | 固定 generate、run、get-results 与超时调用 | 任务结果一致；无永久挂起；超时显式分类 | MCP transcript、子进程记录、JUnit 与聚合报告 |
 
 ## 证据索引
 

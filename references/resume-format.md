@@ -39,6 +39,63 @@ Examples of useful translations:
 - JD tailoring may change ordering and vocabulary, never the underlying fact
   set, scope, numbers, or contribution verb.
 
+## Two-version output contract
+
+Always separate what is usable now from what becomes usable after measurement.
+
+### Current evidence — evidence-ready
+
+- Use only claims and numbers that already pass the evidence and attribution
+  gates.
+- Do not include placeholders, estimates, target values, or hoped-for effects.
+- An architecture bullet without a number is valid when implementation is the
+  strongest available evidence.
+
+Use the heading:
+
+```markdown
+## 当前证据版（证据可用）
+```
+
+### Metric-enhanced — recommended target
+
+- Keep the same project facts and mechanisms; improve only the evidence layer.
+- Use verified metrics directly when their revision and scope match.
+- Represent missing values as named placeholders, for example
+  `[待实测：最佳单路 Recall@10]`, never as estimates.
+- Quantify only the claims whose failure mode has a meaningful metric. Not every
+  bullet needs a number.
+
+If any placeholder remains, use:
+
+```markdown
+## 指标增强版（推荐目标，待实测，不可投递）
+```
+
+When every metric is verified and all success gates pass, remove the placeholders
+and use:
+
+```markdown
+## 指标增强版（推荐版，指标已验证）
+```
+
+“Recommended” describes the preferred evidence-backed narrative. It never makes
+an unmeasured value submit-ready and never bypasses personal attribution.
+
+## Measurement plan
+
+Every named placeholder must appear in a compact plan:
+
+```markdown
+| Claim | Values to fill | Baseline | Frozen workload and sample | Metric and success gate | Artifact |
+| --- | --- | --- | --- | --- | --- |
+| Hybrid retrieval | [待实测：最佳单路 Recall@10], [待实测：融合 Recall@10] | Best lexical or semantic source | Held-out queries at exact SHA | Recall rises; leakage and task success do not regress | Manifest + raw outcomes + aggregate |
+```
+
+The plan is part of the working evidence package, not resume prose. If the
+experiment fails its correctness or task-success gate, preserve the negative
+result and keep the current-evidence version.
+
 ## Preferred project section
 
 ```markdown

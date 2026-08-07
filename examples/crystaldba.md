@@ -7,7 +7,7 @@ Checkout: `detached at origin/main`; dirty state: `clean`
 Analysis: `pinned-source, read-only`; target code was not executed.  
 Attribution: `project-only` — confirm the candidate's contribution before using personal verbs.
 
-## 简历草稿
+## 当前证据版（证据可用）
 
 **Crystal DBA｜PostgreSQL 运维 AI Agent**
 
@@ -19,6 +19,26 @@ Attribution: `project-only` — confirm the candidate's contribution before usin
 2. 项目为出站 Agent API 请求加入系统标识、时效窗口和随机 nonce，并使用 ECDSA P-256 覆盖请求方法、目标地址及请求体摘要；当前证据只支持客户端签名，不支持端到端防重放结论。
 3. 项目采用结构化节点生成 PromQL 聚合、筛选与分页表达式，在执行前校验维度、时间范围和样本上限，并为长时间范围切换预聚合规则。
 4. 项目在历史回放期间缓存实时快照任务，按数据库系统并行、同一系统内串行处理，并将查询文本批量写入 SQLite、指标统一写入 Prometheus。
+
+## 指标增强版（推荐目标，待实测，不可投递）
+
+**Crystal DBA｜PostgreSQL 运维 AI Agent**
+
+**核心技术：** Python、Go、PostgreSQL、Prometheus、SQLite、Docker
+
+**项目描述：** 面向数据库诊断中 SQL 执行、活动数据查询、历史快照回放和远端 Agent 通信的可靠性问题，项目将自然语言交互与 PostgreSQL/Prometheus 数据链路组合为可观察、可约束的运维辅助系统。
+
+1. 针对数据库连接抖动与超时导致诊断中断的问题，引入语句超时和有界指数退避；在 [待实测：SQL 故障 Case 数] 个故障注入 Case 上，相较无重试基线将恢复成功率从 [待实测：无重试恢复成功率] 提升至 [待实测：有界重试恢复成功率]，并将 P95 恢复时间从 [待实测：无重试 P95 恢复时间] 改善至 [待实测：有界重试 P95 恢复时间]。
+2. 针对历史回放阻塞实时快照和单系统慢任务拖累其他系统的问题，采用跨系统并行、系统内串行的快照调度；在 [待实测：数据库系统数] 个系统、[待实测：快照任务数] 个任务下，相较全局串行基线将吞吐从 [待实测：全局串行吞吐] 提升至 [待实测：分系统调度吞吐]，P95 排队时间从 [待实测：全局串行 P95 排队时间] 降至 [待实测：分系统调度 P95 排队时间]。
+3. 针对长时间范围 PromQL 原始查询开销过高的问题，为长区间切换预聚合规则；在 [待实测：长区间 Case 数] 个冻结查询上，相较原始查询将 P95 延迟从 [待实测：原始查询 P95 延迟] 降至 [待实测：预聚合 P95 延迟]，并保持结果一致率为 [待实测：结果一致率]。
+
+## 指标验证计划
+
+| Claim | Values to fill | Baseline | Frozen workload and sample | Metric and success gate | Artifact |
+| --- | --- | --- | --- | --- | --- |
+| SQL 故障恢复 | [待实测：SQL 故障 Case 数], [待实测：无重试恢复成功率], [待实测：有界重试恢复成功率], [待实测：无重试 P95 恢复时间], [待实测：有界重试 P95 恢复时间] | 同一驱动关闭重试 | 固定连接断开、超时与不可重试错误序列 | 恢复成功率提升；不可重试错误不得被重试；查询结果一致 | manifest、逐次重试日志、聚合报告 |
+| 快照调度 | [待实测：数据库系统数], [待实测：快照任务数], [待实测：全局串行吞吐], [待实测：分系统调度吞吐], [待实测：全局串行 P95 排队时间], [待实测：分系统调度 P95 排队时间] | 全局串行处理所有任务 | 固定系统数、快照顺序、大小与慢任务分布 | 吞吐提升且排队下降；SQLite/Prometheus 无丢失、重复或乱序污染 | task manifest、队列时间线、存储核对结果 |
+| 长区间 PromQL | [待实测：长区间 Case 数], [待实测：原始查询 P95 延迟], [待实测：预聚合 P95 延迟], [待实测：结果一致率] | 同一长区间使用原始指标查询 | 固定时间范围、step、series 数与查询集合 | P95 延迟下降；返回 series 与聚合值满足一致性阈值 | 查询清单、Prometheus 原始响应、聚合报告 |
 
 ## 证据索引
 

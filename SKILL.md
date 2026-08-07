@@ -7,7 +7,7 @@ description: Turn software-project evidence into truthful resume, CV, or intervi
 
 Write from evidence, not from project marketing.
 
-The central artifact is a **Claim Ledger**: a compact mapping from each possible
+The central artifact is a **Claim Ledger**: a compact mapping from each candidate
 resume claim to its exact evidence, revision, evidence class, attribution, and
 writability. Build it before writing resume prose.
 
@@ -35,7 +35,7 @@ resume material.
 ## Branches
 
 - **Analyze and write**: inspect a project, build the Claim Ledger, then produce
-  a resume section and evidence map.
+  a current-evidence version, a metric-enhanced version, and an evidence map.
 - **Verify claims**: start from existing bullets; support, qualify, downgrade, or
   reject each one against project evidence.
 - **Tailor to a JD**: use an existing Claim Ledger, or build one from supplied
@@ -114,7 +114,7 @@ with persuasive language.
 Complete when every number, comparison, time scope, and contribution verb is
 supported by the ledger.
 
-### 4. Translate into resume language
+### 4. Draft two resume versions
 
 For each usable claim, translate in this order:
 
@@ -128,8 +128,28 @@ Use the format in [resume-format.md](references/resume-format.md). Prefer three
 strong bullets over six weak ones. Never force a number when the project only
 supports an architecture or implementation claim.
 
-Complete when every bullet maps to one or more Claim Ledger rows and contains no
-placeholder.
+Always produce these two views from the same Claim Ledger:
+
+1. **Current evidence — evidence-ready**: include only claims and numbers that
+   pass the evidence gates. It contains no placeholders. Personal use still
+   requires the attribution gate to pass.
+2. **Metric-enhanced — recommended target**: show the strongest version the
+   project could support after minimal measurement. Reuse eligible metrics when
+   they exist. Otherwise use named placeholders such as
+   `[待实测：融合 Recall@10]`; never estimate a value or range.
+
+For every named placeholder, add a measurement row containing the failure being
+tested, baseline, frozen workload, sample, metric, correctness/task-success gate,
+and artifact to retain. Include a `Values to fill` column and repeat every
+placeholder verbatim in that column; a claim name alone is not a mapping. The
+metric-enhanced version is **not submit-ready** while any placeholder remains.
+Promote it to **recommended, metrics verified** only after all values pass the
+claim gates. Attribution remains a separate gate. A failed experiment remains a
+negative result; do not replace it with the hoped-for value.
+
+Complete when every current-evidence and verified enhanced bullet maps to one or
+more Claim Ledger rows, every enhanced placeholder maps to a measurement row,
+and neither version contains estimated numbers.
 
 ### 5. Verify the delivery
 
@@ -145,17 +165,24 @@ Check:
 - JD wording did not change the fact set;
 - confidential data, private paths, secrets, and third-party identities are not
   exposed.
+- the current-evidence version contains no placeholder;
+- a pending metric-enhanced version is labelled not submit-ready;
+- every enhanced placeholder has a measurement plan and cannot be mistaken for
+  an observed result.
 
-If no claim survives, deliver an evidence-gap and measurement plan instead of
-resume bullets. Honest abstention is a successful result.
+If no claim survives, say that the current-evidence version has no evidence-ready
+bullet and deliver the metric-enhanced target plus its measurement plan. Honest
+abstention is a successful result.
 
 ## Output
 
 Return or write, as requested:
 
-1. the resume-ready project section;
-2. a concise evidence map with revision and claim boundaries;
-3. claims rejected or awaiting measurement/attribution;
-4. optional interview stories derived from the same Claim Ledger.
+1. the current-evidence project section, labelled evidence-ready;
+2. the metric-enhanced project section, labelled either recommended and metrics
+   verified or recommended target, pending measurement, and not submit-ready;
+3. the measurement plan for every unresolved metric placeholder;
+4. a concise evidence map plus rejected or attribution-blocked claims;
+5. optional interview stories derived from the same Claim Ledger.
 
 Do not write into the analyzed repository unless the user asked for files there.

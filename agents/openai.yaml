@@ -1,6 +1,6 @@
 interface:
   display_name: "Project to Resume"
-  short_description: "Turn project evidence into truthful resume claims"
-  default_prompt: "Use $project-to-resume to audit this project and draft an evidence-backed resume section."
+  short_description: "Draft current and metric-enhanced resume versions"
+  default_prompt: "Use $project-to-resume to audit this project and draft current-evidence and metric-enhanced resume versions with a measurement plan."
 policy:
   allow_implicit_invocation: false
