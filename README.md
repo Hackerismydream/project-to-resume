@@ -108,4 +108,4 @@ git -C ~/.codex/skills/project-to-resume pull
 - 不把历史 benchmark、当前源码、发布版本和线上结果混为一谈。
 - 不用仓库作者信息推断候选人的个人贡献。
 
-完整工作规则见 [SKILL.md](SKILL.md)，证据规则与输出格式见 [references](references)。方法来源与许可见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。本项目采用 [MIT License](LICENSE)。
+完整工作规则见 [SKILL.md](SKILL.md)，证据规则与输出格式见 [references](references)。
