@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Validate the small, public two-version example contract.
+"""Validate the public, copy-ready example contract.
 
-This linter checks structure, placeholder boundaries, and orphaned numeric
-claims. It does not claim to verify semantics, attribution, or benchmark
-validity; those require evidence review.
+This linter deliberately checks structure and exact duplication only. Claim
+truth, attribution, metric validity, and semantic story quality still require
+the skill workflow and forward tests.
 """
 
 from __future__ import annotations
@@ -14,140 +14,135 @@ import sys
 from pathlib import Path
 
 
-CURRENT_HEADING = "## 当前证据版（证据可用）"
-PENDING_ENHANCED_HEADING = "## 指标增强版（推荐目标，待实测，不可投递）"
-READY_ENHANCED_HEADING = "## 指标增强版（推荐版，指标已验证）"
-PLAN_HEADING = "## 指标验证计划"
-EVIDENCE_HEADING = "## 证据索引"
-BOUNDARY_HEADING = "## 证据边界"
-REQUIRED_HEADINGS = (CURRENT_HEADING, PLAN_HEADING, EVIDENCE_HEADING, BOUNDARY_HEADING)
-GENERIC_PLACEHOLDER_RE = re.compile(
-    r"\[(?:X|A|B|N|baseline|metric|result)\]|\{(?:X|A|B|N)\}|"
-    r"\b(?:TBD|TODO|XX+%?)\b",
+RESUME_HEADING = "## 可直接粘贴的简历版本"
+QUESTION_HEADING = "## 仅在必要时追问"
+TITLE_RE = re.compile(
+    r"^\*\*(?P<title>[^*\n]+｜[^*\n]+)\*\*\s*$",
+    re.MULTILINE,
+)
+TECH_RE = re.compile(r"^\*\*技术栈：\*\*\s*\S.*$", re.MULTILINE)
+DESCRIPTION_RE = re.compile(r"^\*\*项目描述：\*\*\s*\S.*$", re.MULTILINE)
+BULLET_RE = re.compile(r"^(?:\d+[.)]|[-*])\s+(?P<body>\S.*)$", re.MULTILINE)
+QUESTION_RE = re.compile(r"^[-*]\s+\S", re.MULTILINE)
+PLACEHOLDER_RE = re.compile(
+    r"\[待[^\]\r\n]*\]|\[(?:X|A|B|N|baseline|metric|result)\]|"
+    r"\{(?:X|A|B|N)\}|\b(?:TBD|TODO|XX+%?)\b",
     re.IGNORECASE,
 )
-PENDING_METRIC_RE = re.compile(r"\[待实测：[^\]\r\n]+\]")
-FULL_SHA_RE = re.compile(r"\b[0-9a-f]{40}\b")
-NUMBER_RE = re.compile(r"(?<![A-Za-z])\d+(?:\.\d+)?%?")
-BULLET_RE = re.compile(r"^\d+\.\s+", re.MULTILINE)
-EVIDENCE_ROW_RE = re.compile(r"^\|\s*\d+\s*\|", re.MULTILINE)
+AUDIT_JARGON_RE = re.compile(
+    r"证据注记|Claim Ledger|完整\s*SHA|项目级草稿|当前证据|待实测|"
+    r"\bartifact\b|\brevision\b",
+    re.IGNORECASE,
+)
+MIN_BULLETS = 3
+MAX_BULLETS = 5
+MAX_QUESTIONS = 3
 
 
-def _section(text: str, start: str, end: str) -> str:
-    """Return text between two headings, or an empty string when incomplete."""
-    if start not in text or end not in text:
+def _section(text: str, heading: str) -> str:
+    """Return one level-two Markdown section."""
+    start = text.find(heading)
+    if start < 0:
         return ""
-    return text.split(start, 1)[1].split(end, 1)[0]
-
-
-def _values_to_fill(plan: str) -> str:
-    """Return the cells under the measurement plan's Values to fill column."""
-    rows = [line for line in plan.splitlines() if line.strip().startswith("|")]
-    if not rows:
+    start = text.find("\n", start)
+    if start < 0:
         return ""
-    headers = [cell.strip() for cell in rows[0].strip().strip("|").split("|")]
-    try:
-        values_index = headers.index("Values to fill")
-    except ValueError:
-        return ""
+    start += 1
+    following = re.search(r"^##\s+", text[start:], re.MULTILINE)
+    end = start + following.start() if following else len(text)
+    return text[start:end]
 
-    values: list[str] = []
-    for row in rows[2:]:
-        cells = [cell.strip() for cell in row.strip().strip("|").split("|")]
-        if values_index < len(cells):
-            values.append(cells[values_index])
-    return "\n".join(values)
+
+def _project_blocks(resume: str) -> list[tuple[str, str]]:
+    """Split a resume section into bold project-title blocks."""
+    matches = list(TITLE_RE.finditer(resume))
+    blocks: list[tuple[str, str]] = []
+    for index, match in enumerate(matches):
+        end = matches[index + 1].start() if index + 1 < len(matches) else len(resume)
+        blocks.append((match.group("title").strip(), resume[match.end() : end]))
+    return blocks
+
+
+def _normalized_bullet(body: str) -> str:
+    """Normalize punctuation and whitespace for exact-meaning duplicates."""
+    return re.sub(r"[\s，。；;、,.]+", "", body.casefold())
 
 
 def validate(path: Path) -> list[str]:
-    """Return contract violations for one example Markdown file."""
+    """Return structural contract violations for one example."""
     text = path.read_text(encoding="utf-8")
     errors: list[str] = []
 
-    for heading in REQUIRED_HEADINGS:
-        if heading not in text:
-            errors.append(f"missing heading: {heading}")
+    if RESUME_HEADING not in text:
+        return [f"missing heading: {RESUME_HEADING}"]
 
-    enhanced_headings = [
-        heading
-        for heading in (PENDING_ENHANCED_HEADING, READY_ENHANCED_HEADING)
-        if heading in text
-    ]
-    if len(enhanced_headings) != 1:
-        errors.append("must contain exactly one metric-enhanced status heading")
-        enhanced_heading = PENDING_ENHANCED_HEADING
-    else:
-        enhanced_heading = enhanced_headings[0]
+    resume = _section(text, RESUME_HEADING)
+    projects = _project_blocks(resume)
+    if not projects:
+        errors.append("resume section is missing a bold 'project｜role' title")
 
-    if not FULL_SHA_RE.search(text):
-        errors.append("missing full 40-character commit SHA")
+    seen_titles: set[str] = set()
+    seen_bullets: dict[str, str] = {}
+    for title, block in projects:
+        if title in seen_titles:
+            errors.append(f"duplicate project title: {title}")
+        seen_titles.add(title)
 
-    if GENERIC_PLACEHOLDER_RE.search(text):
-        errors.append("contains an unnamed or generic placeholder")
+        if not TECH_RE.search(block):
+            errors.append(f"project '{title}' is missing a non-empty technology line")
+        if not DESCRIPTION_RE.search(block):
+            errors.append(f"project '{title}' is missing a non-empty project description")
 
-    current = _section(text, CURRENT_HEADING, enhanced_heading)
-    enhanced = _section(text, enhanced_heading, PLAN_HEADING)
-    plan = _section(text, PLAN_HEADING, EVIDENCE_HEADING)
-    evidence = _section(text, EVIDENCE_HEADING, BOUNDARY_HEADING)
-    current_bullets = BULLET_RE.findall(current)
-    enhanced_bullets = BULLET_RE.findall(enhanced)
-    rows = EVIDENCE_ROW_RE.findall(evidence)
-    if not current_bullets:
-        errors.append("current-evidence version contains no numbered bullets")
-    if not enhanced_bullets:
-        errors.append("metric-enhanced version contains no numbered bullets")
-    if len(current_bullets) != len(rows):
-        errors.append(
-            "current/evidence count mismatch: "
-            f"{len(current_bullets)} bullets, {len(rows)} rows"
-        )
+        bullet_matches = list(BULLET_RE.finditer(block))
+        bullets = [match.group("body").strip() for match in bullet_matches]
+        if not MIN_BULLETS <= len(bullets) <= MAX_BULLETS:
+            errors.append(
+                f"project '{title}' has {len(bullets)} bullets; keep each project to "
+                f"{MIN_BULLETS}-{MAX_BULLETS}"
+            )
 
-    current_pending = sorted(set(PENDING_METRIC_RE.findall(current)))
-    for placeholder in current_pending:
-        errors.append(
-            "current-evidence version contains a pending metric placeholder: "
-            f"{placeholder}"
-        )
+        if bullet_matches and block[bullet_matches[-1].end() :].strip():
+            errors.append(
+                f"project '{title}' has prose after its final bullet; keep the "
+                "copy-ready section to project content"
+            )
 
-    enhanced_pending = sorted(set(PENDING_METRIC_RE.findall(enhanced)))
-    if enhanced_heading == PENDING_ENHANCED_HEADING:
-        if not enhanced_pending:
-            errors.append("pending metric-enhanced version contains no named placeholder")
-        mapped_values = _values_to_fill(plan)
-        if not mapped_values:
-            errors.append("measurement plan is missing a Values to fill column")
-        for placeholder in enhanced_pending:
-            if placeholder not in mapped_values:
-                errors.append(f"enhanced placeholder has no measurement plan: {placeholder}")
-    elif enhanced_pending:
-        errors.append("ready metric-enhanced version still contains pending placeholders")
+        for bullet in bullets:
+            normalized = _normalized_bullet(bullet)
+            if normalized in seen_bullets:
+                errors.append(
+                    f"duplicate resume bullet in '{title}': also used in "
+                    f"'{seen_bullets[normalized]}'"
+                )
+            else:
+                seen_bullets[normalized] = title
 
-    # Structural guards only: verified numbers must also appear in the evidence
-    # section. Pending enhanced prose is exempt because its values do not exist
-    # yet and must instead map to the measurement plan above.
-    verified_text = current
-    if enhanced_heading == READY_ENHANCED_HEADING:
-        verified_text += enhanced
-    for number in sorted(set(NUMBER_RE.findall(verified_text))):
-        if number not in evidence:
-            errors.append(f"numeric token has no evidence mention: {number}")
+    if PLACEHOLDER_RE.search(resume):
+        errors.append("resume section contains a placeholder")
+    if AUDIT_JARGON_RE.search(resume):
+        errors.append("resume section leaks audit jargon into copy-ready text")
+
+    if QUESTION_HEADING in text:
+        question_count = len(QUESTION_RE.findall(_section(text, QUESTION_HEADING)))
+        if question_count > MAX_QUESTIONS:
+            errors.append(
+                f"question section has {question_count} questions; keep to "
+                f"{MAX_QUESTIONS}"
+            )
 
     return errors
 
 
 def main() -> int:
-    """Run the example linter."""
     parser = argparse.ArgumentParser()
     parser.add_argument("paths", nargs="+", type=Path)
     args = parser.parse_args()
 
     failed = False
     for path in args.paths:
-        errors = validate(path)
-        if errors:
+        for error in validate(path):
             failed = True
-            for error in errors:
-                print(f"{path}: {error}", file=sys.stderr)
+            print(f"{path}: {error}", file=sys.stderr)
     return 1 if failed else 0
 
 

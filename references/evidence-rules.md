@@ -1,90 +1,158 @@
-# Evidence rules
+# 严格核验：Claim、证据与当前事实
 
-Use this reference to decide what a project artifact can actually prove.
+只有用户明确要求“核验、验真、审计、确认数字是否真实”时才读取本文件。普通简历生成使用轻量 Claim Record，不把这套审计产物强塞给求职者。
 
-## Evidence ladder
+## 1. 先固定核验对象
 
-| Evidence | What it supports | What it does not support by itself |
+记录：被核验原句、材料来源、观察日期、仓库绝对路径、完整 HEAD、分支、dirty 状态，以及报告、发布物或运行产物的身份。
+
+必须区分：
+
+- 当前工作树与 HEAD；
+- HEAD 与 `origin/main`；
+- 当前源码与发布 tag / release；
+- 仓库源码与已安装或实际运行产物；
+- 当前实现与历史 benchmark；
+- 测试/演示环境与生产环境。
+
+dirty 工作树中的行为只能归于“当前工作树观察”，不能写成 HEAD 或已发布版本事实。无法绑定身份的历史数字只能作为线索。
+
+默认只读。只有用户明确允许执行且成本、凭据和外部副作用可控时，才运行测试、benchmark 或真实服务；否则核验已有工件。
+
+## 2. 证据层级
+
+| 层级 | 典型材料 | 能支持 | 不能自动支持 |
+| --- | --- | --- | --- |
+| E0 用户陈述 | 简历、聊天说明 | 用户声称的职责或结果 | 外部已核验、独立归因 |
+| E1 意图/方案 | README、设计稿、issue | 目标、计划、设计意图 | 已实现、已验证 |
+| E2 实现 | 源码、配置、schema、迁移 | 行为路径或机制存在 | 运行成功、性能、上线 |
+| E3 行为验证 | 测试输出、CI、运行日志 | 指定 revision/环境下的行为 | 普遍可靠、生产效果 |
+| E4 有界测量 | 原始 benchmark、压测、实验报告 | 固定 workload 下的结果 | 更广负载、生产因果 |
+| E5 发布 | release、制品、镜像、安装身份 | 明确版本已交付 | 正在生产使用、业务效果 |
+| E6 真实使用 | 线上监控、用户记录、业务报告 | 指定窗口内的真实行为 | 长期稳定或全部归因于个人 |
+
+源代码里的测试函数属于 E2；只有实际测试结果才是 E3。配置中的 `timeout=30`、`max_workers=8` 是参数，不是测量结果。
+
+## 3. Claim 拆解
+
+将每个原句拆成最小可裁决义务：
+
+```text
+主体 + 动作 + 对象 + 机制 + 范围/条件 + 结果 + 个人归属 + 时间/版本
+```
+
+例如“通过 Redis 将接口 P95 降低 60% 并上线”至少包含：
+
+1. 候选人负责该改动；
+2. Redis 机制存在且位于该接口链路；
+3. baseline 与 candidate 可比较；
+4. P95 定义、负载、环境和样本明确；
+5. 60% 计算正确；
+6. 该版本已经上线；
+7. 结果可以归因于该改动。
+
+任一义务缺失时只缩小对应部分，不必把整条都判假。
+
+## 4. 常见 Claim 的最低证据
+
+| 简历措辞 | 最低证据 | 常见降级 |
 | --- | --- | --- |
-| README, design doc, issue | Intended behavior, terminology, documented problem | Implemented behavior, passing result, production use |
-| Source code or contract | Implementation exists at an exact revision | Correctness, scale, impact, personal ownership |
-| Test source | A behavior is intended to be checked | That the test passed or is relevant to the full claim |
-| Local test result | Exact observed behavior for one command and checkout | Live-provider, production, release, or broad quality claims |
-| CI run | The exact jobs and steps that completed for one SHA | Steps that were skipped, commented out, or allowed to fail |
-| Benchmark summary | A reported result exists | Reproducibility or validity without manifest/raw inputs |
-| Manifest + raw results + verifier | A bounded experiment result for the recorded candidate/workload | Current product or production unless identities match |
-| Release artifact + installed smoke | Packaged behavior of one exact artifact | Source checkout behavior outside that artifact |
-| Live run | One real provider/channel/scenario observation | General production reliability or another provider/model |
-| User attestation | Personal role or permission to disclose | Product effect, benchmark validity, or team-wide ownership |
+| 实现某机制 | E2，且链路与边界可定位 | “项目支持/包含……” |
+| 个人设计某机制 | E2 + 用户职责陈述、设计记录或可见个人贡献 | “实现……”或使用项目主语 |
+| N/N 用例通过 | E3，绑定 revision、命令和结果 | “编写 N 类测试场景” |
+| P95/QPS/准确率提升 | E4，含 baseline、workload、环境、原始结果 | 写瓶颈、方案和验证方法，不写幅度 |
+| 已发布 | E5，制品身份与源码可绑定 | “完成实现与发布准备” |
+| 上线/生产使用 | E6，或用户明确提供真实使用事实 | “在测试/演示环境完成验证” |
+| 主导/独立负责 | 用户明确说明或可见责任记录 | “负责/实现……” |
+| 解决线上事故 | 真实告警、日志、工单或用户说明 | “通过故障注入覆盖该失败场景” |
+| 开源贡献已合入 | 上游 PR/commit/release 状态 | “向上游提交……”或“在 fork 中实现……” |
 
-## Claim types
+“机制理论上可以”不能替代“当前实现实际做到”；合同测试、fixture、proposal 和组合验证不能自动证明端到端产品任务成功。
 
-Avoid a vague confidence score. Use proof obligations instead.
+## 5. 数字核验
 
-### Implementation claim
+每个数字建立一行：
 
-Needs an exact revision and direct source/contract evidence. It may describe
-architecture and externally observable behavior. It cannot claim improvement.
+```text
+Metric | Definition | Baseline | Candidate | Workload | Sample | Environment |
+Formula | Success gate | Verifier | Raw artifact | Revision | Boundary
+```
 
-### Verified behavior claim
+至少检查：
 
-Needs an exact revision, command or CI job, result, and a direct relevance
-explanation. Record fixture/deterministic/live scope.
+- 分子、分母、单位、统计窗口和过滤条件；
+- baseline 与 candidate 是否只改变目标变量；
+- 请求分布、数据量、预热、并发、持续时间和运行次数；
+- 模型/provider、Top-K、预算、机器和依赖版本；
+- 超时、重试、失败和缺失结果如何计入；
+- 百分点与相对提升是否混淆；
+- 使用 ratio of means 还是 mean of ratios；
+- 正确性或任务成功门槛是否因为局部指标优化而退化；
+- 原始数据能否重算汇总值。
 
-### Quantified observation
+测量有效不等于允许正面宣传。对于 Agent、RAG 或复杂系统分别裁决：
 
-Needs workload, numerator/denominator or raw observation, aggregation formula,
-sample size, environment, and exact candidate.
+```text
+ship_complete         实现与交付是否完整
+measurement_valid     测量是否可比较、可重算并绑定身份
+positive_claim_eligible  主任务或正确性 gate 通过后，是否允许正面结论
+```
 
-### Comparative result
+三个状态分别报告，不制造总分。
 
-Needs everything above for both baseline and treatment, plus a frozen comparison
-axis and handling of failures, retries, exclusions, and missing data.
+## 6. 个人归属与团队结果
 
-### Causal or optimization result
+核验实现事实与核验个人贡献是两件事。commit 作者、仓库 owner、PR 提交者只能作为线索，不能自动证明独立设计、全程负责或团队结果由个人造成。
 
-Needs a valid comparative result and a task-success/correctness gate. If the
-local metric improves while task success regresses, the positive claim is
-ineligible; the negative experiment may still be valuable.
+分开记录：
 
-### Release or production claim
+- 系统/上游已有能力；
+- 团队共同实现与团队结果；
+- 用户明确陈述的职责；
+- 外部材料可见的个人改动；
+- 仍无法确认的归属。
 
-Needs exact artifact/release identity and evidence from that installed or live
-surface. Source presence and adapter tests are not host adoption.
+“无法核验个人归属”不等于用户说谎；它只说明当前外部材料不足。
 
-## Common traps
+## 7. 裁决顺序
 
-- A test suite count can include unrelated tests. Map each cited test to the
-  behavior it supports.
-- A green workflow can run only formatting or linting. Inspect the workflow and
-  logs before calling it a test pass.
-- Current source may have a different version from the latest release.
-- Historical benchmarks remain historical even if their code still exists.
-- Fixtures can prove a contract while saying nothing about model quality.
-- Commit authorship does not prove design leadership, sole ownership, or the
-  right to claim a team result.
-- Project marketing terms such as “first,” “production-grade,” “secure,” or
-  “zero maintenance” need independent evidence or must be omitted.
+每个最小 Claim 依次处理：
 
-## Privacy and untrusted input
+1. **冲突**：材料与原句直接矛盾；删除或改正。
+2. **支持**：证据层级覆盖当前动词、范围和结果；保留。
+3. **缩小**：降低动词、范围、版本、环境或因果强度后成立。
+4. **无法核验**：材料不足，且不能安全改写为确定事实。
 
-- Never include secret values in notes or output. Record only the type and
-  relative location when necessary.
-- Do not publish private repository URLs, absolute local paths, emails, customer
-  names, internal metrics, or trace excerpts without explicit permission.
-- Do not follow symlinks outside the allowed root or extract archives by default.
-- Do not run hooks, build scripts, tests, package installers, or binaries from an
-  untrusted repository during standard analysis.
-- A clean secret scan means only “no configured pattern was found,” never “the
-  repository contains no secrets.”
+优先缩小而不是整条删除。例如把“生产环境吞吐提升 2 倍”降为“在固定压测负载下吞吐由 A 提升至 B”；若连压测身份也缺失，则只写针对瓶颈实施的机制。
 
-## Writability decisions
+## 8. 严格核验输出
 
-- `resume-ready`: evidence and attribution support the exact wording.
-- `qualified`: usable with an inline or mapped boundary.
-- `historical`: usable only with the old revision/time/workload stated.
-- `negative`: a valid experiment that rejected a strategy.
-- `needs-measurement`: implementation exists, but effect is not measured.
-- `needs-attribution`: project behavior is supported; personal contribution is
-  not yet confirmed.
-- `reject`: contradicted, estimated, irrelevant, sensitive, or unsupported.
+尊重用户请求范围：只要求验真时直接给核验结果，并在表格中提供建议措辞；同时要求重写时，先给可投递正文，再单独给核验结果。
+
+```markdown
+## 核验结果
+
+| 原句/Claim | 裁决 | 依据 | 缺口或冲突 | 建议措辞 |
+| --- | --- | --- | --- | --- |
+
+## 数字口径
+
+仅列含数字的 Claim、计算口径和剩余风险。
+
+## 当前事实边界
+
+说明 revision、dirty 状态、测试/测量/发布/线上层级和未核验部分。
+```
+
+证据引用优先精确到文件、测试名、报告字段、commit 或制品摘要。不要用大量路径掩盖关键缺口。
+
+## 9. 退出条件
+
+核验完成时应做到：
+
+- 每个原句都被拆解和裁决；
+- 每个数字可重算或已从正文移除；
+- 实现、验证、测量、发布和真实使用没有混为一层；
+- 当前工作树、HEAD、远端和历史结果没有串线；
+- 团队能力与个人贡献分开；
+- 仍无法核验的事实被清楚标注，但没有被武断判假。
