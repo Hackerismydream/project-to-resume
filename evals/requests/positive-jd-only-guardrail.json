@@ -1,0 +1,6 @@
+{
+  "id": "positive-jd-only-guardrail",
+  "should_invoke": true,
+  "request": "请根据下面这份 JD 直接帮我生成一个项目经历，我没有仓库、简历或项目说明。",
+  "expected_reason": "简历目标应触发 Skill，但 Skill 必须先请求项目材料，不能根据 JD 创造项目事实"
+}
