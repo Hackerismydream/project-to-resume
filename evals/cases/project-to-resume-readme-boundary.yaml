@@ -1,0 +1,59 @@
+{
+  "case_id": "project-to-resume-readme-boundary",
+  "case_kind": "claim-boundary",
+  "curated_gold": true,
+  "actual_skill_run": false,
+  "coverage": [
+    "readme-strong-implementation-ordinary"
+  ],
+  "repository": {
+    "url": "https://github.com/Hackerismydream/project-to-resume",
+    "commit": "9b721766dc7798173188c177277c1934f50f284a"
+  },
+  "input": "README 宣称能从仓库提炼强故事。请只根据固定 commit 判断可写到什么程度。",
+  "target_role": "Agent 应用工程",
+  "expected_project_map": {
+    "surfaces": [
+      "SKILL instructions",
+      "example linter",
+      "unit tests",
+      "README"
+    ],
+    "boundary": "确定性脚本验证格式与包结构；不能验证模型的语义发现质量"
+  },
+  "top_stories": [
+    {
+      "story": "为项目经历输出建立结构、占位符、重复和审计语言的静态约束",
+      "claim_ceiling": "实现静态校验；不得写语义效果提升",
+      "why": "源码与测试可直接支持确定性行为"
+    }
+  ],
+  "acceptable_alternatives": [
+    "把 README 仅作为产品意图，不写入实现型 bullet"
+  ],
+  "forbidden_claims": [
+    "自动发现所有仓库的最佳故事",
+    "显著提升简历通过率",
+    "真实用户验证效果优于普通润色"
+  ],
+  "evidence_anchors": [
+    {
+      "url": "https://github.com/Hackerismydream/project-to-resume/blob/9b721766dc7798173188c177277c1934f50f284a/README.md",
+      "supports": "README 中的产品定位与使用说明",
+      "does_not_support": "模型语义质量或真实用户结果"
+    },
+    {
+      "url": "https://github.com/Hackerismydream/project-to-resume/blob/9b721766dc7798173188c177277c1934f50f284a/scripts/lint_examples.py",
+      "supports": "示例输出存在确定性结构校验",
+      "does_not_support": "故事选择正确或事实归属正确"
+    },
+    {
+      "url": "https://github.com/Hackerismydream/project-to-resume/blob/9b721766dc7798173188c177277c1934f50f284a/tests/test_lint_examples.py",
+      "supports": "仓库编写了 linter 的正负测试",
+      "does_not_support": "安装后的 Skill 在真实仓库上表现更好"
+    }
+  ],
+  "ownership_boundary": "固定 commit 支持项目事实，不从仓库所有权推断某位求职者的个人贡献。",
+  "expected_questions": [],
+  "expected_bullet_count": 1
+}

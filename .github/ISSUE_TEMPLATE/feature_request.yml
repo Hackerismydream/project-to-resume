@@ -1,0 +1,62 @@
+name: Feature request
+description: Propose a focused improvement to the Skill, evaluation, or contributor experience
+title: "[Feature] "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Strong proposals start from a concrete failure or missing user behavior. A new framework name, domain keyword, or output field is not sufficient by itself.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What current user task, repository pattern, or evidence boundary is not handled well?
+    validations:
+      required: true
+
+  - type: textarea
+    id: example
+    attributes:
+      label: Minimal public example
+      description: Prefer a public repository and fixed commit, or a synthetic fixture without personal data.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed_behavior
+    attributes:
+      label: Proposed behavior
+      description: Describe observable behavior, not only implementation details.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives and trade-offs
+      description: What simpler approach was considered, and what new risk or complexity would this add?
+    validations:
+      required: true
+
+  - type: textarea
+    id: evaluation
+    attributes:
+      label: Evaluation plan
+      description: How would a fixed case distinguish the improved behavior from the current behavior?
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: boundaries
+    attributes:
+      label: Scope check
+      options:
+        - label: The proposal does not require inventing user outcomes, metrics, production status, or personal contribution.
+          required: true
+        - label: The proposal keeps private resumes and internal repositories out of public issues.
+          required: true
+        - label: The proposal remains within repository-to-resume generation rather than expanding into a general job platform.
+          required: true

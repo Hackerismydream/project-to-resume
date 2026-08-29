@@ -1,0 +1,6 @@
+{
+  "id": "negative-code-review",
+  "should_invoke": false,
+  "request": "请只做普通 code review，找出这个仓库里的并发 bug，不要写简历。",
+  "expected_reason": "普通代码审查且明确排除简历目标"
+}

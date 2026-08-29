@@ -1,0 +1,6 @@
+{
+  "id": "negative-architecture-summary",
+  "should_invoke": false,
+  "request": "总结这个仓库的目录结构和系统架构，供新成员 onboarding。",
+  "expected_reason": "仓库总结没有求职或项目经历生成目标"
+}
