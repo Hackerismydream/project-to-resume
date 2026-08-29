@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900" role="img" aria-labelledby="title desc">
+  <title id="title">从项目仓库发现工程故事，再生成简历经历</title>
+  <desc id="desc">左侧是泛化的技术栈描述，中间是从仓库发现的状态、失败、恢复和测试边界，右侧是两条可追问的简历项目经历。</desc>
+  <rect width="1440" height="900" fill="#f6f7f9"/>
+  <rect x="64" y="64" width="1312" height="772" rx="28" fill="#ffffff" stroke="#d9dde5" stroke-width="2"/>
+  <text x="112" y="132" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif" font-size="38" font-weight="700" fill="#15171a">输入：项目仓库 + 目标岗位</text>
+  <text x="112" y="178" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif" font-size="23" fill="#555b66">不是先润色句子，而是先找到代码里真正值得写的工程故事</text>
+
+  <rect x="112" y="236" width="350" height="480" rx="20" fill="#fbfbfc" stroke="#d9dde5" stroke-width="2"/>
+  <text x="144" y="290" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif" font-size="28" font-weight="700" fill="#22252a">Before</text>
+  <text x="144" y="334" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif" font-size="20" fill="#737984">常见原稿</text>
+  <text x="144" y="396" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif" font-size="22" fill="#22252a">
+    <tspan x="144" dy="0">使用 Python 开发 Agent，</tspan>
+    <tspan x="144" dy="38">支持模型调用、工具调用、</tspan>
+    <tspan x="144" dy="38">上下文管理和异常重试。</tspan>
+  </text>
+  <text x="144" y="566" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif" font-size="19" fill="#8b3d3d">
+    <tspan x="144" dy="0">问题：</tspan>
+    <tspan x="144" dy="32">只有能力名词</tspan>
+    <tspan x="144" dy="32">没有失败、判断和边界</tspan>
+  </text>
+
+  <path d="M488 476 H530" stroke="#8b9099" stroke-width="4" stroke-linecap="round"/>
+  <path d="M520 464 L536 476 L520 488" fill="none" stroke="#8b9099" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <rect x="548" y="236" width="350" height="480" rx="20" fill="#f7f9ff" stroke="#b8c6e8" stroke-width="2"/>
+  <text x="580" y="290" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif" font-size="28" font-weight="700" fill="#22252a">从仓库发现</text>
+  <text x="580" y="350" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif" font-size="21" fill="#27334c">
+    <tspan x="580" dy="0">• 核心状态与行为链路</tspan>
+    <tspan x="580" dy="48">• 异常恢复与补偿</tspan>
+    <tspan x="580" dy="48">• 测试暴露的失败边界</tspan>
+    <tspan x="580" dy="48">• 必要的历史或上游差异</tspan>
+  </text>
+  <line x1="580" y1="570" x2="866" y2="570" stroke="#d0d8ea" stroke-width="2"/>
+  <text x="580" y="614" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif" font-size="19" fill="#555f75">
+    <tspan x="580" dy="0">候选故事还要经过：</tspan>
+    <tspan x="580" dy="32">反证 · 竞争 · 去重 · Claim 校准</tspan>
+  </text>
+
+  <path d="M924 476 H966" stroke="#8b9099" stroke-width="4" stroke-linecap="round"/>
+  <path d="M956 464 L972 476 L956 488" fill="none" stroke="#8b9099" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <rect x="984" y="236" width="344" height="480" rx="20" fill="#f7fbf8" stroke="#b7d6c0" stroke-width="2"/>
+  <text x="1016" y="290" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif" font-size="28" font-weight="700" fill="#22252a">After</text>
+  <text x="1016" y="334" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif" font-size="20" fill="#4f6857">可直接投递、能被追问</text>
+  <text x="1016" y="386" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif" font-size="19" fill="#223228">
+    <tspan x="1016" dy="0">按 thinking-only、工具后空响应</tspan>
+    <tspan x="1016" dy="31">和普通空响应分类，分别采用</tspan>
+    <tspan x="1016" dy="31">推理回填、短提示和原样重试，</tspan>
+    <tspan x="1016" dy="31">并以每轮预算限制恢复次数。</tspan>
+  </text>
+  <line x1="1016" y1="542" x2="1296" y2="542" stroke="#d4e3d8" stroke-width="2"/>
+  <text x="1016" y="586" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif" font-size="18" fill="#526158">
+    <tspan x="1016" dy="0">不补造：</tspan>
+    <tspan x="1016" dy="30">成功率、生产效果、个人主导</tspan>
+  </text>
+
+  <text x="112" y="784" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif" font-size="22" font-weight="700" fill="#15171a">输出：一份可直接粘贴的中文项目经历</text>
+  <text x="1328" y="784" text-anchor="end" font-family="Arial, PingFang SC, Microsoft YaHei, sans-serif" font-size="17" fill="#777d86">固定文本 · 可复现 SVG · 无虚构用户评价</text>
+</svg>
