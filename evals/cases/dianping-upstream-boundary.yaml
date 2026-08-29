@@ -1,0 +1,53 @@
+{
+  "case_id": "dianping-upstream-boundary",
+  "case_kind": "ownership-boundary",
+  "curated_gold": true,
+  "actual_skill_run": false,
+  "coverage": [
+    "fork-or-upstream"
+  ],
+  "repository": {
+    "url": "https://github.com/Hackerismydream/dianping",
+    "commit": "c72468e16b386ea152a09262e04601f7d2a91c99",
+    "upstream": "https://github.com/KNeegcyao/dianping"
+  },
+  "input": "这是基于上游点评项目继续改造的仓库。请区分上游能力和我的新增贡献。",
+  "target_role": "Java 后端开发",
+  "expected_project_map": {
+    "upstream_relation": "user supplied; conditional diff required",
+    "current_commit": "pinned",
+    "delta": "unknown until compared"
+  },
+  "top_stories": [
+    {
+      "story": "将 upstream diff 作为个人贡献边界，而不是把当前仓库全部功能视为新增",
+      "claim_ceiling": "只有差异锚点支持后才能写新增/重构/修复",
+      "why": "二次开发项目的核心风险是冒领上游实现"
+    }
+  ],
+  "acceptable_alternatives": [
+    "若无法读取上游，只输出项目级事实并追问贡献范围"
+  ],
+  "forbidden_claims": [
+    "独立实现点评平台全部功能",
+    "从零设计上游已有秒杀与缓存机制",
+    "未比较差异便声称重构效果"
+  ],
+  "evidence_anchors": [
+    {
+      "url": "https://github.com/Hackerismydream/dianping/commit/c72468e16b386ea152a09262e04601f7d2a91c99",
+      "supports": "固定当前 revision 作为差异比较一端",
+      "does_not_support": "该 commit 相对上游的全部新增能力或个人效果"
+    },
+    {
+      "url": "https://github.com/Hackerismydream/dianping/blob/c72468e16b386ea152a09262e04601f7d2a91c99/README.md",
+      "supports": "当前仓库的公开项目说明",
+      "does_not_support": "哪些实现来自 upstream、哪些由用户新增"
+    }
+  ],
+  "ownership_boundary": "用户已声明二次开发关系；必须比较 upstream 或由用户确认具体贡献后才能使用个人动作。",
+  "expected_questions": [
+    "相对上游，你实际新增、重构或验证了哪些链路？"
+  ],
+  "expected_bullet_count": 1
+}

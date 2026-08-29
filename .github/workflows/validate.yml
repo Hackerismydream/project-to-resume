@@ -1,22 +1,62 @@
-name: Validate
+name: validate
 
 on:
   push:
-    branches: [main]
   pull_request:
 
 permissions:
   contents: read
 
 jobs:
-  examples:
+  deterministic-checks:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Validate example contract
-        run: python3 scripts/lint_examples.py examples/*.md
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Compile validators
+        run: python3 -m py_compile scripts/*.py tests/*.py
+
+      - name: Lint copy-ready examples
+        run: python3 scripts/lint_examples.py skills/project-to-resume/examples/*.md
+
+      - name: Validate repository and Skill contracts
+        run: python3 scripts/validate_package.py
+
       - name: Run unit tests
         run: python3 -m unittest discover -s tests -v
+
+      - name: Smoke isolated Skill payload
+        run: python3 scripts/smoke_install.py --source .
+
+      - name: Discover and install with skills CLI
+        shell: bash
+        run: |
+          set -euo pipefail
+          work="$(mktemp -d)"
+          cd "$work"
+          npx --yes skills@1.5.15 add "$GITHUB_WORKSPACE" --list
+          npx --yes skills@1.5.15 add "$GITHUB_WORKSPACE" --skill project-to-resume --agent codex --copy -y
+          test -f .agents/skills/project-to-resume/SKILL.md
+          test -f .agents/skills/project-to-resume/references/repository-discovery.md
+          test -f .agents/skills/project-to-resume/examples/pico-empty-response-recovery.md
+          test -f .agents/skills/project-to-resume/agents/openai.yaml
+          test ! -e .agents/skills/project-to-resume/tests
+          test ! -e .agents/skills/project-to-resume/evals
+
+      - name: Check whitespace errors
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -n "${GITHUB_BASE_REF:-}" ]]; then
+            git diff --check "origin/${GITHUB_BASE_REF}"...HEAD
+          else
+            git diff --check HEAD^ HEAD
+          fi

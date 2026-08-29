@@ -1,0 +1,37 @@
+name: Bug report
+description: Report an installation, activation, output or validation bug
+title: "[Bug] "
+labels:
+  - bug
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      description: Describe the observed behavior and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Include a public repository + fixed commit when possible. Do not include private code, resumes, credentials or customer data.
+    validations:
+      required: true
+  - type: input
+    id: agent
+    attributes:
+      label: Agent / client
+      placeholder: Codex, Claude Code, Cursor, etc.
+  - type: input
+    id: skills_cli
+    attributes:
+      label: skills CLI version
+      placeholder: npx skills --version
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Data safety
+      options:
+        - label: I removed private repository content, personal resume data and credentials.
+          required: true

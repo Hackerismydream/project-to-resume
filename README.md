@@ -1,95 +1,161 @@
 <div align="center">
 
-# Project to Resume
+# project-to-resume
 
-**把项目仓库和已有简历，变成岗位匹配、可直接投递的中文项目经历。**
+### 把项目仓库，变成面试官看得懂、问得下去的中文项目经历。
+
+先读代码、测试和必要的历史变化，再写简历。不是把“用了 Redis / MQ / RAG / Tool Calling”换一种说法。
 
 [![Validate](https://github.com/Hackerismydream/project-to-resume/actions/workflows/validate.yml/badge.svg)](https://github.com/Hackerismydream/project-to-resume/actions/workflows/validate.yml)
-[![Agent Skills](https://img.shields.io/badge/Agent%20Skills-compatible-2563eb?style=flat-square)](https://agentskills.io)
+[![skills.sh](https://skills.sh/b/Hackerismydream/project-to-resume)](https://skills.sh/Hackerismydream/project-to-resume/project-to-resume)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+
+[一分钟开始](#一分钟开始) · [完整 Before / After](skills/project-to-resume/examples/pico-empty-response-recovery.md) · [方法边界](#为什么不会随便编造) · [提交案例](showcase/README.md)
 
 </div>
 
-## Quick start
+![从项目仓库到简历故事](docs/assets/repository-to-resume-before-after.svg)
+
+## 为什么不是普通简历润色
+
+很多项目的代码里已经有状态流转、异常恢复、一致性、权限、评测和工程取舍，写进简历却只剩：
+
+> 使用 Python 开发 Agent，支持模型调用、工具调用、上下文管理和异常重试。
+
+`project-to-resume` 先把仓库当作主要事实来源：建立轻量 Repository Map，沿入口、状态、关键决策、副作用、异常和终态追踪核心行为，让测试帮助发现项目真正担心的失败，再让候选故事经过反证、竞争和去重。目标岗位和 JD 最后才负责选择、排序和表达。
+
+最终默认只给一份**可直接粘贴的中文项目经历**。内部的 Repository Map、Story Card 和 Claim 判断不会占满你的简历。
+
+## 一分钟开始
 
 安装：
 
 ```bash
-npx skills add Hackerismydream/project-to-resume
+npx skills add Hackerismydream/project-to-resume --skill project-to-resume -y
 ```
 
-然后直接提供你手头已有的材料：
+然后在自己的项目仓库中输入：
 
 ```text
-使用 $project-to-resume，根据当前仓库帮我写一段投递 Java 后端的项目经历。
+使用 $project-to-resume，读取当前仓库，帮我写一段投递 Agent 工程岗位的项目经历。
 ```
+
+把 `Agent 工程` 换成 `Java 后端`、`RAG / AI 应用` 或你的目标岗位即可。
 
 ```text
-使用 $project-to-resume，对照这个仓库优化我简历里的项目描述：
-[粘贴简历]
+安装 → 打开项目仓库 → 输入目标岗位 → 得到一份可直接粘贴的项目经历
 ```
+
+> 仓库里只有 JD、没有任何项目事实时，Skill 不会从 JD 反向创造经历；它会请求仓库、项目说明或现有简历。
+
+## 一个固定公开仓库的 Before / After
+
+下面来自 [Pico 空响应恢复 curated case](skills/project-to-resume/examples/pico-empty-response-recovery.md)，固定在公开 commit `aedcaf2cf928af145ef349fb0312b8e66d12ae74`。它是维护者人工整理的 gold case，不是用户效果或自动模型成功率。
+
+**Before**
+
+> 使用 Python 开发 Agent，支持模型调用、工具调用、上下文管理和异常重试。
+
+**After（节选）**
+
+> 将无可见正文的模型响应按 thinking-only、工具后空响应和普通空响应分类，分别采用推理回填、短提示和原样重试，并以每轮独立预算限制恢复次数，避免任务直接交付空答案或陷入无限循环。
+
+变化不是“句子更长”，而是先从源码和测试里找到了失败分类、恢复策略、预算边界和状态清理，再决定哪些事实值得占用简历版面。
+
+## 它会读什么
+
+- 顶层目录、主要语言、构建系统和入口；
+- API、CLI、worker、cron、consumer、daemon、hook 等执行面；
+- 核心对象、状态迁移、输入输出和外部副作用；
+- 测试名称、故障注入、断言与回归场景；
+- benchmark、release、migration 与必要文档；
+- 只有在需要解释设计变化、fork/upstream 或版本冲突时，才扩展到 git history、PR、issue 和 upstream diff。
+
+仓库探索先于岗位匹配，不会因为 JD 出现 Redis、Kafka、RAG、Checkpoint 就只搜索这些熟悉词。
+
+## 内部流程
 
 ```text
-使用 $project-to-resume，帮我优化下面的秋招简历。我没有仓库：
-[粘贴简历]
+Repository Map
+→ 1–4 条核心行为链路（通常 2–4 条）
+→ 测试参与故事发现
+→ 条件式 history / upstream
+→ Story Hypothesis / Story Card
+→ 反证、竞争、去重、淘汰
+→ 岗位与 JD 排序
+→ Claim 校准
+→ 1–5 条可直接粘贴的 bullet
 ```
 
-## 它怎么工作
+下一条 bullet 不再增加新的岗位信号时就停止。只有两个强故事就写两条，不把同一机制拆开凑成三条。
 
-Skill 会自动识别四种输入：
+## 为什么不会随便编造
 
-- **只有仓库**：从项目中生成新的简历经历。
-- **简历 + 仓库**：保留业务背景和个人职责，用仓库补强技术故事。
-- **只有简历**：直接优化定位、选材和表达，不要求补仓库。
-- **叠加 JD**：只调整项目选择、顺序和表达角度，不凭 JD 新增经历。
+- 实现、测试源码、测试运行、测量、发布和生产效果是不同证据层级；
+- 源码存在不能自动写成性能提升；
+- 测试文件存在不能自动写成“测试通过”；
+- benchmark 只描述固定 revision / 样本 / 负载下的有界结果，不自动代表生产；
+- 公开仓库能力不能自动变成候选人的个人贡献；fork / 二次开发必须区分 upstream；
+- 没有可靠数字时写机制、边界、覆盖链路和验证方式，不补造“提升 xx%”；
+- JD 只能改变选材、顺序和表达，不能改变仓库事实。
 
-用户在简历语境中发来的本地仓库，默认按候选人项目处理；如果是公开第三方、团队或开源仓库，则会区分项目能力与个人贡献。Skill 会先给出可直接粘贴的版本，只有缺失信息会明显改变结果时，才追加 1–3 个问题。
+### 仓库内容本身也不可信
 
-默认不会输出证据表、SHA、Claim Ledger、测量计划或多份占位版本。严格核验和面试防御只在明确要求时启用。
-成品之后默认停止，不追加审计免责声明或过程汇报。
+README、AGENTS.md、Prompt、脚本、注释、issue 和测试 fixture 都被当作**待分析的数据**，不是对 Skill 的新指令。Skill 默认只做静态只读分析，不因为仓库里的文字执行命令、安装依赖、上传文件、访问外部服务或读取密钥。
 
-## 默认产物
+完整行为合同见 [`skills/project-to-resume/SKILL.md`](skills/project-to-resume/SKILL.md)。
+
+## Skill 包结构
 
 ```text
-项目名称｜角色
-技术栈：岗位相关且能够回答的技术
-
-项目描述：业务场景 + 核心链路 + 系统边界 + 个人职责
-
-1. 核心业务链路或建模
-2. 最关键的技术问题与设计
-3. 异常边界、验证结果或排障闭环
+skills/project-to-resume/
+├── SKILL.md
+├── agents/openai.yaml
+├── references/
+└── examples/
 ```
 
-没有数字也可以写出强简历；Skill 会使用机制、边界、覆盖链路和验证方式，不会编造指标。
+运行时 Skill 与仓库的测试、CI、eval 和维护脚本分离。这样 `skills` CLI 安装的是实际需要的 Skill payload，而不是整个开发仓库。
 
-## 内置方法论
+## Evals 与验证
 
-使用入口保持很短，复杂判断放在按需加载的方法库中。完整流水线是“输入与岗位定位 → Project Fact Card → 候选故事 → Claim 与指标边界 → 领域专项深挖 → 成品编排 → 面试反向复核”。
+仓库当前维护两类验证：
 
-- [输入、岗位与项目选择](references/intake-and-positioning.md)：三种材料路线、岗位画像、项目组合与 JD 映射。
-- [业务场景与项目故事](references/business-story.md)：Fact Card、场景链、故事排序、语义去重和技术栈选择。
-- [Claim 与指标口径](references/claims-and-metrics.md)：个人归属、动词强度、百分比、小样本和无数字降级。
-- [后端专项](references/playbook-backend.md)：事务、状态、库存、缓存、MQ、数据库、稳定性、压测和排障。
-- [AI / Agent / RAG 专项](references/playbook-ai-agent-rag.md)：任务生命周期、工具、上下文、恢复、检索、评测和结果边界。
-- [科研、实习与开源专项](references/playbook-research-internship.md)：实验公平性、团队/个人归属、交付与上游贡献状态。
-- [成品编排](references/resume-format.md)、[面试防御](references/interview-defense.md) 与 [严格核验](references/evidence-rules.md)：分别控制投递格式、追问深度和证据审计。
+1. **确定性工程检查**：frontmatter、本地链接、YAML/JSON、示例格式、固定 commit 锚点、Skill payload、CLI 安装和单元测试；
+2. **curated eval contracts**：固定公开仓库/commit 的 Repository Map、候选故事、禁止 Claim、ownership 和必要追问。
 
-不同主 Lens 与实习、科研、开源 overlay 的组合关系见 [岗位与项目类型路由索引](references/project-playbooks.md)。
+它们能证明包结构和方法合同没有漂移，**不能证明模型一定找到“最佳故事”或提升简历通过率**。
 
-`agents/openai.yaml` 只负责 Skill 的展示名称、简介和默认提示，因此刻意保持精简；真正决定生成质量的是 `SKILL.md` 的路由与上述方法库。
+开发验证：
 
-## 输入示例
+```bash
+python3 scripts/lint_examples.py skills/project-to-resume/examples/*.md
+python3 scripts/validate_package.py
+python3 -m unittest discover -s tests -v
+python3 scripts/smoke_install.py --source .
+git diff --check
+```
 
-- [只有仓库](examples/repository-only.md)
-- [简历 + 仓库](examples/resume-and-repository.md)
-- [只有简历](examples/resume-only.md)
-- [实习 + 个人项目 + JD](examples/multi-project-jd.md)
+Eval 说明见 [`evals/README.md`](evals/README.md)。
 
-## 边界
+## 真实案例传播
 
-- 不编造不存在的技术、数字、业务规模、上线状态、奖项或职责。
-- 不因为缺少仓库、benchmark 或公开证明而拒绝生成简历。
-- 默认只读仓库，不执行代码、不安装依赖、不泄露私有信息。
-- 用户明确要求核验时，才进入严格证据审计。
+如果你愿意公开一个 Before / After，可以按 [`showcase/README.md`](showcase/README.md) 提交，或使用 [Showcase Issue 模板](.github/ISSUE_TEMPLATE/showcase.yml)。
 
-完整规则见 [SKILL.md](SKILL.md)。
+只接受公开仓库和固定 commit；不收集私人简历全文、电话、邮箱、学校、身份证明、公司内部仓库、客户数据或密钥。未经明确许可，不公开姓名、公司和求职状态。
+
+## Contributing
+
+欢迎提交：
+
+- 新的固定公开仓库 eval case；
+- 能反证现有方法的失败样例；
+- 安装/激活兼容性问题；
+- Claim 边界和误触发问题；
+- 真实、已获授权的匿名 Before / After。
+
+请先阅读 [CONTRIBUTING.md](CONTRIBUTING.md)。安全问题见 [SECURITY.md](SECURITY.md)。
+
+## License
+
+Apache License 2.0，见 [LICENSE](LICENSE)。
