@@ -13,7 +13,6 @@ from pathlib import Path
 PACKAGE_ENTRIES = (
     "SKILL.md",
     "README.md",
-    "LICENSE",
     "agents",
     "references",
     "examples",

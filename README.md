@@ -114,7 +114,3 @@ git diff --check
 ## 提交真实 Before / After
 
 [`showcase/README.md`](showcase/README.md) 提供轻量提交格式，也可以使用 [Showcase Issue 模板](.github/ISSUE_TEMPLATE/showcase.yml)。只接受公开仓库和固定 commit；不收集私人简历全文、电话、邮箱、学校、身份证明、公司内部仓库或客户数据，未经明确许可不公开姓名、公司和求职状态。
-
-## License
-
-[Apache License 2.0](LICENSE)
