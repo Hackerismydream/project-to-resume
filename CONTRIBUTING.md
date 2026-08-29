@@ -1,66 +1,85 @@
 # Contributing
 
-Thanks for improving `project-to-resume`. The project is intentionally narrow: turn software repositories into truthful, interview-defensible Chinese resume project experience.
+`project-to-resume` 的质量目标不是规则数量，而是：陌生仓库中的强故事更容易被发现，弱故事和越界 Claim 更容易被淘汰，最终输出仍然简洁。
 
-## Good contributions
-
-High-value contributions usually fall into one of these categories:
-
-- a fixed public repository + commit that exposes a failure mode the current method misses;
-- a false-positive / false-negative Skill trigger case;
-- an ownership, metric, benchmark, release, fork or upstream boundary case;
-- a packaging or Agent Skills compatibility bug;
-- a deterministic validation improvement;
-- an anonymized Before / After case with explicit permission to publish.
-
-Please avoid expanding the project into an ATS, job tracker, PDF generator, offer manager, generic code-review tool, or multi-Skill career platform.
-
-## Development
+## 开发环境
 
 ```bash
-python3 scripts/lint_examples.py skills/project-to-resume/examples/*.md
-python3 scripts/validate_package.py
-python3 -m unittest discover -s tests -v
-python3 scripts/smoke_install.py --source .
-git diff --check
+python3 -m venv .venv
+source .venv/bin/activate
+make install-dev
+make check
 ```
 
-The CI additionally exercises the official `skills` CLI against the local repository layout.
+维护脚本使用 Python 3.12。Skill 本身是 Markdown 指令包，用户运行 Skill 不需要安装这些 Python 依赖。
 
-## Adding an eval case
+## 唯一真源
 
-1. Use a public repository and pin a full 40-character commit SHA.
-2. Add a case under `evals/cases/` following `evals/schema.json`.
-3. Separate:
-   - project facts;
-   - candidate ownership;
-   - current implementation;
-   - tests that exist;
-   - tests that actually ran;
-   - benchmark measurements;
-   - release / production / business outcomes.
-4. Include both `supports` and `does_not_support` for every evidence anchor.
-5. Mark manually authored cases as `curated_gold: true` and `actual_skill_run: false` unless a real installed-skill run was actually executed and preserved.
-6. Add or update tests if the case introduces a new invariant.
+可安装 payload 只位于：
 
-## Changing the Skill
+```text
+skills/project-to-resume/
+```
 
-Keep `skills/project-to-resume/SKILL.md` concise enough to load as runtime instructions. Put deeper domain material in `references/` and load it progressively.
+不要在仓库根目录新增第二份 `SKILL.md`、`references/`、`examples/` 或 `agents/`。官方 CLI、隔离 smoke test 和发布均以该目录为准。
 
-A behavior change should normally include:
+## 方法改动
 
-- the failure mode being fixed;
-- the smallest instruction/reference change that fixes it;
-- a deterministic regression test where possible;
-- an eval case when deterministic code cannot judge the semantic behavior;
-- README changes only after the underlying capability exists.
+修改 `SKILL.md` 或 `references/` 时，请说明：
 
-## Before / After submissions
+- 解决了哪类真实失败；
+- 为什么现有规则不够；
+- 新规则会删除、合并或改变什么行为；
+- 是否增加上下文成本；
+- 用哪个固定仓库 case 证明它有价值。
 
-Use the [Showcase template](.github/ISSUE_TEMPLATE/showcase.yml) or `showcase/README.md`.
+不要只增加看起来完整的检查清单。
 
-Do not submit private resumes, private repositories, customer data, credentials, personal contact details, or employer-confidential information.
+## Eval case
 
-## Pull requests
+case 必须：
 
-Keep PRs reviewable. State what is implemented, what is only structurally validated, what still needs real model evaluation, and what claims must not be made.
+- 使用公开仓库与 40 位 commit；
+- 包含可核验的 evidence anchor；
+- 分开项目事实、团队/upstream 能力与个人归属；
+- 记录 forbidden claims；
+- 明确是 curated gold 还是实际 Skill run；
+- 不含私人简历、内部代码、客户数据或密钥。
+
+新增后运行：
+
+```bash
+python3 scripts/validate_evals.py
+```
+
+## README 与传播内容
+
+能力必须先于营销。新增定位、效果或兼容性说法时，指出对应实现或验证；不要写安装量、Star、用户反馈、成功率、通过率或 Offer 结果，除非存在公开、可审计来源。
+
+## Pull request
+
+建议一个 PR 只解决一个主要问题。正文应包含：
+
+- 问题与失败场景；
+- 方法或行为变化；
+- 影响文件；
+- 验证命令与实际结果；
+- 哪些检查是结构性的；
+- 哪些语义效果仍未验证；
+- 是否影响安装、触发或 Claim 边界。
+
+使用 [PR 模板](.github/PULL_REQUEST_TEMPLATE.md) 中的检查项。
+
+## 代码与文档约定
+
+- 不提交缓存、虚拟环境、日志或临时输出；
+- Markdown 本地链接必须可解析；
+- 静态检查不得宣传为模型语义评测；
+- 不因为测试文件存在而写“测试通过”；
+- 不把 README、proposal 或 curated case 写成真实产品效果；
+- 不把框架、upstream 或团队能力默认归给个人；
+- 改变触发、输出、Claim、安装或 eval schema 时更新 [CHANGELOG.md](CHANGELOG.md)。
+
+## 隐私
+
+请阅读 [SECURITY.md](SECURITY.md)。公开 issue 和 PR 中不要提交私人简历全文、内部仓库、客户信息、访问令牌或任何可识别个人的信息。

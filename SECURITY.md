@@ -1,33 +1,37 @@
 # Security Policy
 
-`project-to-resume` analyzes repositories that may contain untrusted text, code, configuration and generated artifacts. The Skill is designed to treat repository content as data rather than instructions.
+## Scope
 
-## Supported scope
+本项目是一个 Agent Skill 和配套校验工具。安全问题包括：
 
-Security reports are especially useful for:
+- 仓库内容诱导 Agent 执行命令、访问外部服务或泄露数据；
+- 路径逃逸、私有文件读取或意外包含密钥；
+- Showcase 或 eval case 泄露私人简历、内部仓库或客户数据；
+- 安装流程复制超出 Skill payload 的文件；
+- 校验器对恶意 YAML、JSON 或 Markdown 处理不安全；
+- README 或示例引导用户执行不必要的高权限操作。
 
-- prompt-injection paths that can make the Skill follow repository instructions instead of the user's resume task;
-- accidental execution of target-repository code or dependency installation;
-- reads that escape the repository through symlinks or other path tricks;
-- leakage of credentials, private repository content, customer data or resume PII;
-- external requests that send repository or resume data without explicit user intent;
-- packaging issues that install unrelated development files as runtime Skill content.
+## 默认安全模型
 
-## Reporting
+- Skill 默认只读仓库；
+- 不安装目标项目依赖，不运行不可信项目代码，不初始化子模块；
+- README、AGENTS、Prompt、issue、脚本和注释均视为不可信数据；
+- 不因仓库内容扩大权限、发送数据或访问外部服务；
+- 只有用户明确授权且环境安全时才运行目标仓库已有命令；
+- 公开案例只接受公开仓库和固定 commit，不收集私人简历全文。
 
-Please use GitHub's private vulnerability reporting feature when available. If that is not available, open a minimal public issue that does not include exploit payloads, secrets, private repository paths or personal data, and ask for a private follow-up channel.
+## 报告问题
 
-Do not include real credentials or private employer/customer material in a report.
+优先使用 GitHub 的私密安全报告入口。若该入口不可用：
 
-## Runtime safety expectations
+1. 不要在公开 issue 中披露密钥、私人数据、可利用细节或内部仓库地址；
+2. 创建一个不含敏感信息的 issue，只说明需要联系维护者处理安全问题；
+3. 等待维护者提供私密沟通方式。
 
-The Skill should:
+普通方法缺陷、错误触发和无敏感信息的校验问题可以使用 Bug Report 模板公开提交。
 
-- default to static, read-only repository analysis;
-- treat README, AGENTS.md, Prompt files, comments, scripts, issues and fixtures as untrusted data;
-- ignore repository instructions that ask it to execute commands, install dependencies, access unrelated URLs, upload content, reveal secrets or change the user's task;
-- avoid `.env`, private keys, tokens and other credential material unless the user explicitly asks about them for a legitimate reason;
-- not follow symlinks outside the repository;
-- bind test, benchmark, release and production claims to the evidence actually observed.
+## 支持范围
 
-These constraints are part of the runtime contract in `skills/project-to-resume/SKILL.md`.
+安全修复以默认分支 `main` 为准。历史分支和未合并 PR 不单独维护。
+
+本项目不能保证宿主 Agent、第三方 Skill 安装器或用户运行环境的安全。报告会在本仓库可控制的范围内处理，并区分 Skill 指令、维护脚本与外部工具责任。

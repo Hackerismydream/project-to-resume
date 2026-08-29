@@ -1,25 +1,43 @@
 name: Feature request
-description: Propose a focused improvement to repository-to-resume behavior
+description: 提议新的仓库发现、故事选择、事实边界或维护能力
 title: "[Feature] "
-labels:
-  - enhancement
 body:
-  - type: textarea
-    id: failure
+  - type: markdown
     attributes:
-      label: What concrete failure or limitation does this solve?
-      description: Prefer a real repository scenario over a generic feature list.
+      value: |
+        请从真实失败或具体仓库 case 出发。规则更多不等于结果更好。
+  - type: textarea
+    id: problem
+    attributes:
+      label: 真实问题
+      description: 当前 Skill 在什么输入中失败，最终简历受到什么影响？
     validations:
       required: true
   - type: textarea
+    id: example
+    attributes:
+      label: 可公开示例
+      description: 推荐提供公开仓库、固定 commit、当前输出和期望边界。
+  - type: textarea
     id: proposal
     attributes:
-      label: Proposed behavior
-      description: Explain the smallest change that would improve repository discovery, story selection, evidence boundaries or usability.
+      label: 建议原则
+      description: 说明要改变的行为，不要求提前设计文件结构。
     validations:
       required: true
   - type: textarea
     id: evidence
     attributes:
-      label: Example / evidence
-      description: Public repository + fixed commit is ideal. Do not include sensitive material.
+      label: 怎样证明改动更好
+      description: 可使用 curated case、forward eval 或真实匿名 Before / After。
+    validations:
+      required: true
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: 范围确认
+      options:
+        - label: 这不是多 Skill 求职平台、简历排版或 Offer 管理需求。
+          required: true
+        - label: 我没有提交私人简历、内部仓库、客户数据或密钥。
+          required: true
