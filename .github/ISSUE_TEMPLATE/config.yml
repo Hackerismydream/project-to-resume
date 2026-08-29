@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security and privacy reports
+    url: https://github.com/Hackerismydream/project-to-resume/blob/main/SECURITY.md
+    about: Do not disclose vulnerabilities, private resumes, credentials, or internal repository data in a public issue.
+  - name: Before / After showcase guide
+    url: https://github.com/Hackerismydream/project-to-resume/blob/main/showcase/README.md
+    about: Read the privacy and fixed-revision requirements before submitting a public case.
