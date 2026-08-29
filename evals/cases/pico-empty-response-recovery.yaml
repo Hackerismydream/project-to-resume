@@ -1,82 +1,56 @@
-{
-  "case_id": "pico-empty-response-recovery",
-  "case_kind": "repository-forward-gold",
-  "curated_gold": true,
-  "actual_skill_run": false,
-  "coverage": [
-    "test-reveals-failure-story",
-    "only-two-strong-stories"
-  ],
-  "repository": {
-    "url": "https://github.com/Hackerismydream/pico",
-    "commit": "aedcaf2cf928af145ef349fb0312b8e66d12ae74"
-  },
-  "input": "读取该固定 commit，面向 Agent Runtime 岗位生成项目经历；不要沿用 README 宣传结论。",
-  "target_role": "Agent Runtime / Agent 应用工程",
-  "expected_project_map": {
-    "execution_surfaces": [
-      "Agent Loop",
-      "CLI/TUI/Gateway/Cron/Channel project surface"
-    ],
-    "core_state": [
-      "LLMResponse visible content",
-      "per-turn recovery counters",
-      "synthetic recovery messages"
-    ],
-    "test_discovery": [
-      "thinking-only",
-      "post-tool empty",
-      "plain empty",
-      "bounded fallback",
-      "synthetic state persistence"
-    ],
-    "unknowns": [
-      "real model forward-run result",
-      "production usage",
-      "candidate ownership"
-    ]
-  },
-  "top_stories": [
-    {
-      "story": "按空响应类型选择 bounded recovery，并在预算耗尽后收敛",
-      "claim_ceiling": "实现/分类/限制；不得写成功率提升",
-      "why": "位于 Turn 收敛链路，包含失败分类、优先级与预算判断"
-    },
-    {
-      "story": "恢复判断与 Loop 副作用分离，并避免 synthetic message 持久化",
-      "claim_ceiling": "抽取纯函数、编写回归场景；不得写测试已通过",
-      "why": "增加可测试性与会话状态卫生的独立岗位信号"
-    }
-  ],
-  "acceptable_alternatives": [
-    "将两个恢复故事合并为一条更密集的 runtime reliability bullet"
-  ],
-  "forbidden_claims": [
-    "空响应恢复显著提升任务成功率",
-    "所有恢复测试均通过",
-    "已在生产稳定运行",
-    "候选人独立主导全部 Pico Runtime"
-  ],
-  "evidence_anchors": [
-    {
-      "url": "https://github.com/Hackerismydream/pico/blob/aedcaf2cf928af145ef349fb0312b8e66d12ae74/README.md",
-      "supports": "项目定位为多入口共享 Runtime 的 Agent Harness",
-      "does_not_support": "具体恢复实现、个人贡献或产品效果"
-    },
-    {
-      "url": "https://github.com/Hackerismydream/pico/blob/aedcaf2cf928af145ef349fb0312b8e66d12ae74/pico/agent/loop/recovery.py",
-      "supports": "恢复动作、分类优先级和默认预算存在于当前源码",
-      "does_not_support": "真实模型效果、测试运行或生产可靠性"
-    },
-    {
-      "url": "https://github.com/Hackerismydream/pico/blob/aedcaf2cf928af145ef349fb0312b8e66d12ae74/tests/test_agent_loop_empty_recovery.py",
-      "supports": "仓库编写了恢复分类、预算、fallback 和持久化边界场景",
-      "does_not_support": "这些场景在本次 case 中实际运行通过或生产有效"
-    }
-  ],
-  "ownership_boundary": "公开仓库只能支持项目级事实；没有用户陈述时不把实现归属到具体候选人。",
-  "expected_questions": [
-    "这是你的个人项目还是开源参与？你具体负责哪部分？"
-  ],
-  "expected_bullet_count": 2
-}
+case_id: pico-empty-response-recovery
+case_kind: repository-forward-gold
+curated_gold: true
+actual_skill_run: false
+coverage:
+  - test-reveals-failure-story
+  - only-two-strong-stories
+repository:
+  url: https://github.com/Hackerismydream/pico
+  commit: aedcaf2cf928af145ef349fb0312b8e66d12ae74
+input: 这是我的个人项目。我负责空响应恢复模块和相关测试；没有生产或性能数字。读取固定 commit，面向 Agent Runtime 岗位生成项目经历。
+target_role: Agent Runtime / Agent 应用工程
+expected_project_map:
+  execution_surfaces:
+    - Agent Loop
+    - CLI/TUI/Gateway/Cron/Channel project surface
+  core_state:
+    - LLMResponse visible content
+    - per-turn recovery counters
+    - temporary recovery messages
+  test_discovery:
+    - thinking-only
+    - post-tool empty
+    - plain empty
+    - bounded fallback
+    - temporary state persistence
+  unknowns:
+    - real model forward-run result
+    - production usage
+top_stories:
+  - story: 按空响应类型选择有预算上限的恢复动作，并在预算耗尽后收敛
+    claim_ceiling: 负责实现、分类和限制；不得写成功率提升
+    why: 位于 Turn 收敛链路，包含失败分类、优先级与预算判断
+  - story: 将恢复判断与 Loop 副作用分离，并避免临时恢复消息持久化
+    claim_ceiling: 负责抽取纯函数、编写回归场景；不得写测试已通过
+    why: 增加可测试性与会话状态边界的独立岗位信号
+acceptable_alternatives:
+  - 将两个恢复故事合并为一条更密集的 runtime reliability bullet
+forbidden_claims:
+  - 空响应恢复显著提升任务成功率
+  - 所有恢复测试均通过
+  - 已在生产稳定运行
+  - 独立主导全部 Pico Runtime
+evidence_anchors:
+  - url: https://github.com/Hackerismydream/pico/blob/aedcaf2cf928af145ef349fb0312b8e66d12ae74/README.md
+    supports: 项目定位为多入口共享 Runtime 的 Agent Harness
+    does_not_support: 具体恢复实现、个人贡献或产品效果
+  - url: https://github.com/Hackerismydream/pico/blob/aedcaf2cf928af145ef349fb0312b8e66d12ae74/pico/agent/loop/recovery.py
+    supports: 恢复动作、分类优先级和默认预算存在于当前源码
+    does_not_support: 真实模型效果、测试运行或生产可靠性
+  - url: https://github.com/Hackerismydream/pico/blob/aedcaf2cf928af145ef349fb0312b8e66d12ae74/tests/test_agent_loop_empty_recovery.py
+    supports: 仓库编写了恢复分类、预算、fallback 和持久化边界场景
+    does_not_support: 这些场景在本次 case 中实际运行通过或生产有效
+ownership_boundary: 用户明确负责空响应恢复模块和相关测试，可以在该范围内使用普通个人动词；不能扩展到全部 Runtime、上线或效果。
+expected_questions: []
+expected_bullet_count: 2

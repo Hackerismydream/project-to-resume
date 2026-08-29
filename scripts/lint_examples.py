@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Validate the public, copy-ready example contract.
+"""Validate the public copy-ready example contract.
 
 This linter checks deterministic structure, placeholders, audit-language leaks,
-and exact-normalized duplication. It deliberately does not claim to validate
-attribution, metric truth, story quality, or model behavior.
+and exact-normalized duplication. It deliberately does not validate factual
+attribution, metric truth, semantic story quality, or model behavior.
 """
 
 from __future__ import annotations
@@ -13,13 +13,9 @@ import re
 import sys
 from pathlib import Path
 
-
 RESUME_HEADING = "## 可直接粘贴的简历版本"
 QUESTION_HEADING = "## 仅在必要时追问"
-TITLE_RE = re.compile(
-    r"^\*\*(?P<title>[^*\n]+｜[^*\n]+)\*\*\s*$",
-    re.MULTILINE,
-)
+TITLE_RE = re.compile(r"^\*\*(?P<title>[^*\n]+｜[^*\n]+)\*\*\s*$", re.MULTILINE)
 TECH_RE = re.compile(r"^\*\*技术栈：\*\*\s*\S.*$", re.MULTILINE)
 DESCRIPTION_RE = re.compile(r"^\*\*项目描述：\*\*\s*\S.*$", re.MULTILINE)
 BULLET_RE = re.compile(r"^(?:\d+[.)]|[-*])\s+(?P<body>\S.*)$", re.MULTILINE)
@@ -30,8 +26,8 @@ PLACEHOLDER_RE = re.compile(
     re.IGNORECASE,
 )
 AUDIT_JARGON_RE = re.compile(
-    r"证据注记|Claim Ledger|完整\s*SHA|项目级草稿|当前证据|待实测|"
-    r"\bartifact\b|\brevision\b",
+    r"证据注记|Claim Ledger|Claim Record|Story Card|Repository Map|完整\s*SHA|"
+    r"项目级草稿|当前证据|待实测|\bartifact\b|\brevision\b",
     re.IGNORECASE,
 )
 MAX_BULLETS = 5
@@ -39,7 +35,6 @@ MAX_QUESTIONS = 3
 
 
 def _section(text: str, heading: str) -> str:
-    """Return one level-two Markdown section."""
     start = text.find(heading)
     if start < 0:
         return ""
@@ -53,7 +48,6 @@ def _section(text: str, heading: str) -> str:
 
 
 def _project_blocks(resume: str) -> list[tuple[str, str]]:
-    """Split a resume section into bold project-title blocks."""
     matches = list(TITLE_RE.finditer(resume))
     blocks: list[tuple[str, str]] = []
     for index, match in enumerate(matches):
@@ -63,12 +57,10 @@ def _project_blocks(resume: str) -> list[tuple[str, str]]:
 
 
 def _normalized_bullet(body: str) -> str:
-    """Normalize punctuation and whitespace for exact-meaning duplicates."""
-    return re.sub(r"[\s，。；;、,.]+", "", body.casefold())
+    return re.sub(r"[\s，。；;、,.：:（）()]+", "", body.casefold())
 
 
 def validate(path: Path) -> list[str]:
-    """Return deterministic structural violations for one example."""
     text = path.read_text(encoding="utf-8")
     errors: list[str] = []
 
@@ -95,9 +87,7 @@ def validate(path: Path) -> list[str]:
         bullet_matches = list(BULLET_RE.finditer(block))
         bullets = [match.group("body").strip() for match in bullet_matches]
         if not bullets:
-            errors.append(
-                f"project '{title}' has no bullets; keep at least one strong story"
-            )
+            errors.append(f"project '{title}' has no bullets; keep at least one strong story")
         elif len(bullets) > MAX_BULLETS:
             errors.append(
                 f"project '{title}' has {len(bullets)} bullets; keep each project "
@@ -126,11 +116,12 @@ def validate(path: Path) -> list[str]:
         errors.append("resume section leaks audit jargon into copy-ready text")
 
     if QUESTION_HEADING in text:
+        if text.find(QUESTION_HEADING) < text.find(RESUME_HEADING):
+            errors.append("question section must follow the copy-ready resume section")
         question_count = len(QUESTION_RE.findall(_section(text, QUESTION_HEADING)))
         if question_count > MAX_QUESTIONS:
             errors.append(
-                f"question section has {question_count} questions; keep to "
-                f"{MAX_QUESTIONS}"
+                f"question section has {question_count} questions; keep to {MAX_QUESTIONS}"
             )
 
     return errors

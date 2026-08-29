@@ -22,6 +22,23 @@ def _load_validator(repo_root: Path):
     return module
 
 
+def _is_relative_to(path: Path, parent: Path) -> bool:
+    try:
+        path.relative_to(parent)
+        return True
+    except ValueError:
+        return False
+
+
+def _summary(root: Path) -> dict[str, int]:
+    return {
+        "files": sum(1 for path in root.rglob("*") if path.is_file()),
+        "references": len(list((root / "references").glob("*.md"))),
+        "examples": len(list((root / "examples").glob("*.md"))),
+        "agent_configs": len(list((root / "agents").glob("*.yaml"))),
+    }
+
+
 def install_skill(source: Path, destination: Path) -> dict[str, int]:
     repo_root = source.resolve()
     skill_source = repo_root / "skills" / SKILL_NAME
@@ -33,19 +50,31 @@ def install_skill(source: Path, destination: Path) -> dict[str, int]:
         raise ValueError(f"destination directory must be named '{SKILL_NAME}'")
     if destination.exists():
         raise FileExistsError(destination)
+    if destination == repo_root or _is_relative_to(destination, repo_root):
+        raise ValueError("destination must be outside the source repository")
 
-    shutil.copytree(skill_source, destination)
+    shutil.copytree(
+        skill_source,
+        destination,
+        ignore=shutil.ignore_patterns("__pycache__", "*.pyc", ".pytest_cache"),
+    )
     validator = _load_validator(repo_root)
-    errors = validator.validate_skill(destination)
+    errors = validator.validate_tree(
+        destination,
+        profile="installed",
+        strict_directory_name=True,
+    )
     if errors:
         raise RuntimeError("installed Skill validation failed:\n" + "\n".join(errors))
 
-    return {
-        "files": sum(1 for path in destination.rglob("*") if path.is_file()),
-        "references": len(list((destination / "references").glob("*.md"))),
-        "examples": len(list((destination / "examples").glob("*.md"))),
-        "agent_configs": len(list((destination / "agents").glob("*.yaml"))),
-    }
+    source_summary = _summary(skill_source)
+    installed_summary = _summary(destination)
+    if source_summary != installed_summary:
+        raise RuntimeError(
+            "installed Skill differs from canonical payload: "
+            f"source={source_summary}, installed={installed_summary}"
+        )
+    return installed_summary
 
 
 def main() -> int:

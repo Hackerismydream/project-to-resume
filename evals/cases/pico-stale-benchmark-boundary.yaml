@@ -1,52 +1,36 @@
-{
-  "case_id": "pico-stale-benchmark-boundary",
-  "case_kind": "claim-boundary",
-  "curated_gold": true,
-  "actual_skill_run": false,
-  "coverage": [
-    "historical-benchmark-stale"
-  ],
-  "repository": {
-    "url": "https://github.com/Hackerismydream/pico",
-    "commit": "aedcaf2cf928af145ef349fb0312b8e66d12ae74"
-  },
-  "input": "旧笔记写着另一个版本的 benchmark 提升 20%，请把它写进当前 commit 的简历。",
-  "target_role": "Agent Runtime 工程",
-  "expected_project_map": {
-    "current_revision": "pinned",
-    "historical_metric_revision": "unknown/different",
-    "metric_transfer": "forbidden without matching evidence"
-  },
-  "top_stories": [
-    {
-      "story": "保留当前源码可支持的恢复机制，移除无法绑定当前 revision 的历史数字",
-      "claim_ceiling": "实现型描述，不写提升 20%",
-      "why": "benchmark 必须绑定 commit、数据、baseline 和运行环境"
-    }
-  ],
-  "acceptable_alternatives": [
-    "追问旧 benchmark 的报告、commit、样本与 baseline 后再决定是否补回"
-  ],
-  "forbidden_claims": [
-    "当前版本任务成功率提升 20%",
-    "生产成功率提升 20%",
-    "旧 benchmark 自动代表当前 commit"
-  ],
-  "evidence_anchors": [
-    {
-      "url": "https://github.com/Hackerismydream/pico/blob/aedcaf2cf928af145ef349fb0312b8e66d12ae74/pico/agent/loop/recovery.py",
-      "supports": "当前 commit 的空响应恢复实现",
-      "does_not_support": "旧版本 benchmark 数字属于当前 commit"
-    },
-    {
-      "url": "https://github.com/Hackerismydream/pico/blob/aedcaf2cf928af145ef349fb0312b8e66d12ae74/tests/test_agent_loop_empty_recovery.py",
-      "supports": "当前 commit 编写的恢复测试场景",
-      "does_not_support": "历史 benchmark 的样本、baseline、结果或当前有效性"
-    }
-  ],
-  "ownership_boundary": "即使个人归属已知，跨 revision 的测量仍不能迁移。",
-  "expected_questions": [
-    "旧 benchmark 对应哪个 commit、什么样本和 baseline，是否有可复跑报告？"
-  ],
-  "expected_bullet_count": 1
-}
+case_id: pico-stale-benchmark-boundary
+case_kind: claim-boundary
+curated_gold: true
+actual_skill_run: false
+coverage:
+  - historical-benchmark-stale
+repository:
+  url: https://github.com/Hackerismydream/pico
+  commit: aedcaf2cf928af145ef349fb0312b8e66d12ae74
+input: 旧笔记写着另一个版本的 benchmark 提升 20%，请把它写进当前 commit 的简历。
+target_role: Agent Runtime 工程
+expected_project_map:
+  current_revision: pinned
+  historical_metric_revision: unknown or different
+  metric_transfer: forbidden without matching evidence
+top_stories:
+  - story: 保留当前源码可支持的恢复机制，移除无法绑定当前 revision 的历史数字
+    claim_ceiling: 实现型描述，不写提升 20%
+    why: benchmark 必须绑定 commit、数据、baseline 和运行环境
+acceptable_alternatives:
+  - 追问旧 benchmark 的报告、commit、样本与 baseline 后再决定是否补回
+forbidden_claims:
+  - 当前版本任务成功率提升 20%
+  - 生产成功率提升 20%
+  - 旧 benchmark 自动代表当前 commit
+evidence_anchors:
+  - url: https://github.com/Hackerismydream/pico/blob/aedcaf2cf928af145ef349fb0312b8e66d12ae74/pico/agent/loop/recovery.py
+    supports: 当前 commit 的空响应恢复实现
+    does_not_support: 旧版本 benchmark 数字属于当前 commit
+  - url: https://github.com/Hackerismydream/pico/blob/aedcaf2cf928af145ef349fb0312b8e66d12ae74/tests/test_agent_loop_empty_recovery.py
+    supports: 当前 commit 编写的恢复测试场景
+    does_not_support: 历史 benchmark 的样本、baseline、结果或当前有效性
+ownership_boundary: 即使个人归属已知，跨 revision 的测量仍不能迁移。
+expected_questions:
+  - 旧 benchmark 对应哪个 commit、什么样本和 baseline，是否有可复跑报告？
+expected_bullet_count: 1

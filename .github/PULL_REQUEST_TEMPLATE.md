@@ -1,26 +1,39 @@
 ## Problem
 
-What failure mode or user problem does this PR address?
+<!-- What real failure, repository case, or user outcome does this change address? -->
 
 ## Change
 
-What changed in the Skill, references, evals or tooling?
+<!-- Describe the behavior change, not only the files. -->
 
 ## Evidence boundary
 
-- What is implemented and deterministically validated?
-- What still depends on model behavior or real-user evaluation?
-- What claims must not be made from this PR alone?
+- [ ] I did not turn README intent into implementation fact.
+- [ ] I did not turn test source into a test-run result.
+- [ ] I did not turn a benchmark into production impact.
+- [ ] I separated project capability, upstream/team capability, and personal contribution.
+- [ ] Marketing or README claims do not exceed implemented and validated behavior.
 
 ## Validation
 
-- [ ] `python3 scripts/lint_examples.py skills/project-to-resume/examples/*.md`
-- [ ] `python3 scripts/validate_package.py`
-- [ ] `python3 -m unittest discover -s tests -v`
-- [ ] `python3 scripts/smoke_install.py --source .`
-- [ ] `git diff --check`
+```text
+make install-dev
+make check
+```
 
-## Safety
+<!-- Paste the actual result and distinguish structural checks from model behavior. -->
 
-- [ ] No private repository data, resume PII, credentials or customer data added.
-- [ ] README/product claims do not exceed implemented or measured capability.
+## Evaluation impact
+
+- [ ] Existing eval contracts still pass.
+- [ ] I added or updated a fixed-revision case when behavior changed.
+- [ ] I documented semantic behavior that remains unverified.
+
+## Security and privacy
+
+- [ ] No private resume, internal repository, customer data, secret, or generated artifact is included.
+- [ ] Repository content remains untrusted data; this change does not execute repository instructions by default.
+
+## Compatibility
+
+<!-- Note changes to triggering, output format, Agent Skills metadata, installation, or required files. -->
