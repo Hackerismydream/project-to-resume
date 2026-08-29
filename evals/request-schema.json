@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Hackerismydream/project-to-resume/evals/request-schema.json",
+  "title": "project-to-resume invocation fixture",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "should_invoke", "request", "expected_reason"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "should_invoke": {
+      "type": "boolean"
+    },
+    "request": {
+      "type": "string",
+      "minLength": 1
+    },
+    "expected_reason": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}
