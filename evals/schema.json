@@ -1,0 +1,163 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Hackerismydream/project-to-resume/evals/schema.json",
+  "title": "project-to-resume repository discovery eval case",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "case_id",
+    "case_kind",
+    "curated_gold",
+    "actual_skill_run",
+    "coverage",
+    "repository",
+    "input",
+    "target_role",
+    "expected_project_map",
+    "top_stories",
+    "acceptable_alternatives",
+    "forbidden_claims",
+    "evidence_anchors",
+    "ownership_boundary",
+    "expected_questions"
+  ],
+  "properties": {
+    "case_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "case_kind": {
+      "enum": [
+        "repository-forward-gold",
+        "claim-boundary",
+        "ownership-boundary",
+        "trigger-boundary"
+      ]
+    },
+    "curated_gold": {
+      "type": "boolean"
+    },
+    "actual_skill_run": {
+      "type": "boolean"
+    },
+    "coverage": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "repository": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "url",
+        "commit"
+      ],
+      "properties": {
+        "url": {
+          "type": "string",
+          "pattern": "^https://github\\.com/[^/]+/[^/]+/?$"
+        },
+        "commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "upstream": {
+          "type": "string",
+          "pattern": "^https://github\\.com/[^/]+/[^/]+/?$"
+        }
+      }
+    },
+    "input": {
+      "type": "string",
+      "minLength": 1
+    },
+    "target_role": {
+      "type": "string"
+    },
+    "expected_project_map": {
+      "type": "object",
+      "minProperties": 1
+    },
+    "top_stories": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "story",
+          "claim_ceiling",
+          "why"
+        ],
+        "properties": {
+          "story": {
+            "type": "string"
+          },
+          "claim_ceiling": {
+            "type": "string"
+          },
+          "why": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "acceptable_alternatives": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "forbidden_claims": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "evidence_anchors": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "url",
+          "supports",
+          "does_not_support"
+        ],
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "supports": {
+            "type": "string"
+          },
+          "does_not_support": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "ownership_boundary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "expected_questions": {
+      "type": "array",
+      "maxItems": 3,
+      "items": {
+        "type": "string"
+      }
+    },
+    "expected_bullet_count": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5
+    }
+  }
+}

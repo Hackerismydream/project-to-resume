@@ -1,22 +1,29 @@
-name: Validate
+name: validate
 
 on:
   push:
-    branches: [main]
   pull_request:
 
 permissions:
   contents: read
 
 jobs:
-  examples:
+  deterministic-checks:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Validate example contract
+      - name: Compile validators
+        run: python3 -m py_compile scripts/*.py tests/*.py
+      - name: Lint copy-ready examples
         run: python3 scripts/lint_examples.py examples/*.md
+      - name: Validate package contracts
+        run: python3 scripts/validate_package.py
       - name: Run unit tests
         run: python3 -m unittest discover -s tests -v
+      - name: Smoke install isolated package
+        run: python3 scripts/smoke_install.py --source .
+      - name: Check whitespace errors
+        run: git diff --check HEAD^ HEAD || git diff --check
