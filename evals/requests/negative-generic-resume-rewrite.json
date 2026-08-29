@@ -1,0 +1,6 @@
+{
+  "id": "negative-generic-resume-rewrite",
+  "should_invoke": false,
+  "request": "帮我把整份简历的教育背景、技能和自我评价润色一下，我没有提供项目仓库，也没有指定 project-to-resume。",
+  "expected_reason": "通用简历润色不属于隐式 repository-to-resume 路由"
+}

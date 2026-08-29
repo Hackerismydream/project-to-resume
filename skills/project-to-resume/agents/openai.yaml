@@ -1,6 +1,6 @@
 interface:
   display_name: "项目仓库转简历"
   short_description: "先读代码、测试和必要历史，再提炼可追问的中文项目经历"
-  default_prompt: "使用 $project-to-resume，读取当前仓库，帮我写一段投递目标岗位的项目经历。"
+  default_prompt: "使用 $project-to-resume，读取当前仓库，生成一段投递目标岗位的中文项目经历。"
 policy:
   allow_implicit_invocation: true

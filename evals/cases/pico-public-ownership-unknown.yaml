@@ -1,52 +1,36 @@
-{
-  "case_id": "pico-public-ownership-unknown",
-  "case_kind": "ownership-boundary",
-  "curated_gold": true,
-  "actual_skill_run": false,
-  "coverage": [
-    "public-repo-ownership-unknown"
-  ],
-  "repository": {
-    "url": "https://github.com/Hackerismydream/pico",
-    "commit": "aedcaf2cf928af145ef349fb0312b8e66d12ae74"
-  },
-  "input": "这里只有一个公开仓库 URL。请帮我写进个人简历。",
-  "target_role": "Agent Runtime 工程",
-  "expected_project_map": {
-    "ownership": "unknown",
-    "repository_facts": "available",
-    "candidate_contribution": "not established"
-  },
-  "top_stories": [
-    {
-      "story": "先生成项目级候选事实，再追问候选人负责范围",
-      "claim_ceiling": "项目实现/项目包含；不得使用个人强动词",
-      "why": "系统事实与个人归属必须分层"
-    }
-  ],
-  "acceptable_alternatives": [
-    "在归属确认前只给降级项目主语版本"
-  ],
-  "forbidden_claims": [
-    "我独立设计并实现 Pico",
-    "主导多入口 Runtime 架构",
-    "将项目上线并支撑生产"
-  ],
-  "evidence_anchors": [
-    {
-      "url": "https://github.com/Hackerismydream/pico/blob/aedcaf2cf928af145ef349fb0312b8e66d12ae74/README.md",
-      "supports": "项目公开定位与可见能力说明",
-      "does_not_support": "当前用户就是作者、维护者或贡献者"
-    },
-    {
-      "url": "https://github.com/Hackerismydream/pico/blob/aedcaf2cf928af145ef349fb0312b8e66d12ae74/pico/agent/loop/recovery.py",
-      "supports": "固定 commit 存在恢复实现",
-      "does_not_support": "用户个人编写、主导或上线该实现"
-    }
-  ],
-  "ownership_boundary": "公开 URL、仓库 owner 和 commit author 都不能替代用户对个人职责的确认。",
-  "expected_questions": [
-    "你与这个仓库是什么关系，具体负责或修改了哪些部分？"
-  ],
-  "expected_bullet_count": 1
-}
+case_id: pico-public-ownership-unknown
+case_kind: ownership-boundary
+curated_gold: true
+actual_skill_run: false
+coverage:
+  - public-repo-ownership-unknown
+repository:
+  url: https://github.com/Hackerismydream/pico
+  commit: aedcaf2cf928af145ef349fb0312b8e66d12ae74
+input: 这里只有一个公开仓库 URL。请帮我写进个人简历。
+target_role: Agent Runtime 工程
+expected_project_map:
+  ownership: unknown
+  repository_facts: available
+  candidate_contribution: not established
+top_stories:
+  - story: 先生成项目级候选事实，再追问候选人负责范围
+    claim_ceiling: 项目实现或项目包含；不得使用个人强动词
+    why: 系统事实与个人归属必须分层
+acceptable_alternatives:
+  - 在归属确认前只给降级项目主语版本
+forbidden_claims:
+  - 我独立设计并实现 Pico
+  - 主导多入口 Runtime 架构
+  - 将项目上线并支撑生产
+evidence_anchors:
+  - url: https://github.com/Hackerismydream/pico/blob/aedcaf2cf928af145ef349fb0312b8e66d12ae74/README.md
+    supports: 项目公开定位与可见能力说明
+    does_not_support: 当前用户就是作者、维护者或贡献者
+  - url: https://github.com/Hackerismydream/pico/blob/aedcaf2cf928af145ef349fb0312b8e66d12ae74/pico/agent/loop/recovery.py
+    supports: 固定 commit 存在恢复实现
+    does_not_support: 用户个人编写、主导或上线该实现
+ownership_boundary: 公开 URL、仓库 owner 和 commit author 都不能替代用户对个人职责的确认。
+expected_questions:
+  - 你与这个仓库是什么关系，具体负责或修改了哪些部分？
+expected_bullet_count: 1

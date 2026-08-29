@@ -2,27 +2,43 @@ name: validate
 
 on:
   push:
+    branches:
+      - main
   pull_request:
 
 permissions:
   contents: read
 
+concurrency:
+  group: validate-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  SKILLS_CLI_VERSION: "1.5.23"
+
 jobs:
   deterministic-checks:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "22"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
 
-      - name: Compile validators
+      - name: Install validation dependencies
+        run: python3 -m pip install -r requirements-dev.txt
+
+      - name: Compile validators and tests
         run: python3 -m py_compile scripts/*.py tests/*.py
+
+      - name: Validate Agent Skills specification
+        run: skills-ref validate skills/project-to-resume
 
       - name: Lint copy-ready examples
         run: python3 scripts/lint_examples.py skills/project-to-resume/examples/*.md
@@ -30,33 +46,109 @@ jobs:
       - name: Validate repository and Skill contracts
         run: python3 scripts/validate_package.py
 
+      - name: Validate eval schema and fixtures
+        run: python3 scripts/validate_evals.py
+
       - name: Run unit tests
         run: python3 -m unittest discover -s tests -v
 
-      - name: Smoke isolated Skill payload
+      - name: Smoke install canonical payload
         run: python3 scripts/smoke_install.py --source .
-
-      - name: Discover and install with skills CLI
-        shell: bash
-        run: |
-          set -euo pipefail
-          work="$(mktemp -d)"
-          cd "$work"
-          npx --yes skills@1.5.15 add "$GITHUB_WORKSPACE" --list
-          npx --yes skills@1.5.15 add "$GITHUB_WORKSPACE" --skill project-to-resume --agent codex --copy -y
-          test -f .agents/skills/project-to-resume/SKILL.md
-          test -f .agents/skills/project-to-resume/references/repository-discovery.md
-          test -f .agents/skills/project-to-resume/examples/pico-empty-response-recovery.md
-          test -f .agents/skills/project-to-resume/agents/openai.yaml
-          test ! -e .agents/skills/project-to-resume/tests
-          test ! -e .agents/skills/project-to-resume/evals
 
       - name: Check whitespace errors
         shell: bash
         run: |
-          set -euo pipefail
-          if [[ -n "${GITHUB_BASE_REF:-}" ]]; then
-            git diff --check "origin/${GITHUB_BASE_REF}"...HEAD
+          if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
+            git diff --check "origin/${GITHUB_BASE_REF}...HEAD"
+          elif git rev-parse --verify HEAD^1 >/dev/null 2>&1; then
+            git diff --check HEAD^1 HEAD
           else
-            git diff --check HEAD^ HEAD
+            git diff --check
           fi
+
+  official-cli-install:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Install validation dependencies
+        run: python3 -m pip install -r requirements-dev.txt
+
+      - name: Discover Skill with official CLI
+        run: npx --yes "skills@${SKILLS_CLI_VERSION}" add "$GITHUB_WORKSPACE" --list
+
+      - name: Install local checkout with official CLI
+        shell: bash
+        run: |
+          install_root="$(mktemp -d)"
+          cd "$install_root"
+          npx --yes "skills@${SKILLS_CLI_VERSION}" add "$GITHUB_WORKSPACE" \
+            --skill project-to-resume \
+            --agent codex \
+            --copy \
+            --yes
+          installed="$install_root/.agents/skills/project-to-resume"
+          test -f "$installed/SKILL.md"
+          test -f "$installed/LICENSE"
+          test -f "$installed/agents/openai.yaml"
+          test -f "$installed/references/repository-discovery.md"
+          test -f "$installed/examples/pico-empty-response-recovery.md"
+          test ! -e "$installed/tests"
+          test ! -e "$installed/evals"
+          test ! -e "$installed/.github"
+          skills-ref validate "$installed"
+          python3 "$GITHUB_WORKSPACE/scripts/validate_package.py" "$installed" \
+            --profile installed \
+            --strict-directory-name
+
+  public-install:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs:
+      - deterministic-checks
+      - official-cli-install
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Install validation dependencies
+        run: python3 -m pip install -r requirements-dev.txt
+
+      - name: Install public main with official CLI
+        shell: bash
+        run: |
+          install_root="$(mktemp -d)"
+          cd "$install_root"
+          npx --yes "skills@${SKILLS_CLI_VERSION}" add Hackerismydream/project-to-resume \
+            --skill project-to-resume \
+            --agent codex \
+            --copy \
+            --yes
+          installed="$install_root/.agents/skills/project-to-resume"
+          test -f "$installed/SKILL.md"
+          grep -F 'version: "0.2.0"' "$installed/SKILL.md"
+          skills-ref validate "$installed"
+          python3 "$GITHUB_WORKSPACE/scripts/validate_package.py" "$installed" \
+            --profile installed \
+            --strict-directory-name
