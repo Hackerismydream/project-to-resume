@@ -1,0 +1,6 @@
+{
+  "id": "positive-resume-and-repository",
+  "should_invoke": true,
+  "request": "这是我的项目仓库和现有两条简历 bullet，请核对代码后重写成 Java 后端项目经历。",
+  "expected_reason": "仓库事实核验与简历改写目标同时存在"
+}

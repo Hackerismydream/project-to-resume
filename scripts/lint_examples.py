@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Validate the public, copy-ready example contract.
 
-This linter deliberately checks structure and exact duplication only. Claim
-truth, attribution, metric validity, and semantic story quality still require
-the skill workflow and forward tests.
+This linter checks deterministic structure, placeholders, audit-language leaks,
+and exact-normalized duplication. It deliberately does not claim to validate
+attribution, metric truth, story quality, or model behavior.
 """
 
 from __future__ import annotations
@@ -34,7 +34,6 @@ AUDIT_JARGON_RE = re.compile(
     r"\bartifact\b|\brevision\b",
     re.IGNORECASE,
 )
-MIN_BULLETS = 3
 MAX_BULLETS = 5
 MAX_QUESTIONS = 3
 
@@ -69,7 +68,7 @@ def _normalized_bullet(body: str) -> str:
 
 
 def validate(path: Path) -> list[str]:
-    """Return structural contract violations for one example."""
+    """Return deterministic structural violations for one example."""
     text = path.read_text(encoding="utf-8")
     errors: list[str] = []
 
@@ -95,10 +94,14 @@ def validate(path: Path) -> list[str]:
 
         bullet_matches = list(BULLET_RE.finditer(block))
         bullets = [match.group("body").strip() for match in bullet_matches]
-        if not MIN_BULLETS <= len(bullets) <= MAX_BULLETS:
+        if not bullets:
             errors.append(
-                f"project '{title}' has {len(bullets)} bullets; keep each project to "
-                f"{MIN_BULLETS}-{MAX_BULLETS}"
+                f"project '{title}' has no bullets; keep at least one strong story"
+            )
+        elif len(bullets) > MAX_BULLETS:
+            errors.append(
+                f"project '{title}' has {len(bullets)} bullets; keep each project "
+                f"to at most {MAX_BULLETS}"
             )
 
         if bullet_matches and block[bullet_matches[-1].end() :].strip():

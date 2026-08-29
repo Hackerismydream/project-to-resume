@@ -1,0 +1,6 @@
+{
+  "id": "positive-repository-role",
+  "should_invoke": true,
+  "request": "使用 project-to-resume，读取当前仓库，帮我写一段投递 Agent 工程岗位的项目经历。",
+  "expected_reason": "明确要求从仓库生成岗位项目经历"
+}

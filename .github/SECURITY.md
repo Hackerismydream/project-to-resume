@@ -1,0 +1,1 @@
+Security reports must follow the repository-level [SECURITY.md](../SECURITY.md). Do not open a public issue containing vulnerabilities, private resumes, credentials, internal repository content, customer data, or personal information.

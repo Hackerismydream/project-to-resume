@@ -1,0 +1,50 @@
+name: Documentation correction
+description: Report a broken link, stale instruction, or factual boundary problem in public documentation
+title: "[Docs] "
+labels:
+  - documentation
+body:
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Problem type
+      options:
+        - Broken or missing link
+        - Installation instruction
+        - Stale branch or release statement
+        - Unsupported factual claim
+        - Ambiguous example
+        - Translation or wording
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: page
+    attributes:
+      label: Page or file
+      placeholder: README.md or a public URL
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What is wrong?
+      description: Explain the observed problem and why it could mislead a user.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed
+    attributes:
+      label: Proposed correction
+      description: Optional. Include a fixed public source when the correction is factual.
+
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy check
+      options:
+        - label: This report does not contain a private resume, internal repository content, credentials, or personal information.
+          required: true

@@ -1,0 +1,36 @@
+name: Usage question
+description: Ask a focused question about installation, invocation, or documented boundaries
+title: "[Question] "
+labels:
+  - question
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: What are you trying to do?
+      description: Describe the target role and material type without pasting a private resume or internal code.
+    validations:
+      required: true
+
+  - type: textarea
+    id: attempted
+    attributes:
+      label: What have you tried?
+      description: Include the Skill commit and relevant command or prompt.
+    validations:
+      required: true
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Focused question
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy check
+      options:
+        - label: I removed private resumes, credentials, internal repository content, customer data, and personal information.
+          required: true

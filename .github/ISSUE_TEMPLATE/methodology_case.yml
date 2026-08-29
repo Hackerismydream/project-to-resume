@@ -1,0 +1,46 @@
+name: Methodology counterexample
+description: Submit a fixed public repository case where the current discovery or story-selection method fails
+title: "[Counterexample] "
+labels:
+  - evaluation
+body:
+  - type: input
+    id: repository
+    attributes:
+      label: Public repository
+      placeholder: https://github.com/owner/repository
+    validations:
+      required: true
+  - type: input
+    id: commit
+    attributes:
+      label: Full commit SHA
+    validations:
+      required: true
+  - type: input
+    id: role
+    attributes:
+      label: Target role
+    validations:
+      required: true
+  - type: textarea
+    id: failure
+    attributes:
+      label: Observed methodology failure
+      description: What important chain was missed, what weak story was selected, or what Claim exceeded its source?
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected reasoning boundary
+      description: Describe the evidence-backed alternative and any acceptable variants.
+    validations:
+      required: true
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Safety check
+      options:
+        - label: The case uses only public or synthetic material and contains no private resume, credentials, customer data, or internal code.
+          required: true

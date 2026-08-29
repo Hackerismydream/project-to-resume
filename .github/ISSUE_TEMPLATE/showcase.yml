@@ -1,0 +1,72 @@
+name: "提交 Before / After 案例"
+description: "提交公开仓库与固定 commit 的匿名化项目经历案例"
+title: "[Showcase] "
+labels:
+  - showcase
+body:
+  - type: markdown
+    attributes:
+      value: |
+        只提交公开仓库和可公开内容。不要粘贴私人简历全文、联系方式、学校/身份证明、公司内部代码或客户数据。
+  - type: input
+    id: repository
+    attributes:
+      label: 公开仓库 URL
+      placeholder: https://github.com/owner/repository
+    validations:
+      required: true
+  - type: input
+    id: commit
+    attributes:
+      label: 固定 commit
+      description: 请填写 40 位 SHA，避免案例随 main 漂移。
+    validations:
+      required: true
+  - type: input
+    id: target_role
+    attributes:
+      label: 目标岗位
+      placeholder: Java 后端 / Agent Runtime / RAG 应用
+    validations:
+      required: true
+  - type: textarea
+    id: before
+    attributes:
+      label: 原始 bullet
+      description: 只贴与该项目有关的少量原文，不要提交完整简历。
+    validations:
+      required: true
+  - type: textarea
+    id: after
+    attributes:
+      label: 最终采用版本
+    validations:
+      required: true
+  - type: textarea
+    id: ownership
+    attributes:
+      label: 个人贡献与 upstream 边界
+      description: 哪些部分由你负责，哪些来自团队、模板或上游项目？
+    validations:
+      required: true
+  - type: dropdown
+    id: attribution
+    attributes:
+      label: 公开署名范围
+      options:
+        - 仅匿名展示案例
+        - 可展示 GitHub 用户名
+        - 暂不允许公开展示
+    validations:
+      required: true
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: 隐私确认
+      options:
+        - label: 我没有提交私人简历全文、电话、邮箱、学校、身份证明或住址。
+          required: true
+        - label: 我没有提交公司内部仓库、客户数据、密钥、未公开代码或日志。
+          required: true
+        - label: 我理解提交案例不代表项目效果、招聘结果或通过率得到验证。
+          required: true

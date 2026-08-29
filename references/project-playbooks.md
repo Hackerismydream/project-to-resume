@@ -1,10 +1,21 @@
 # 岗位与项目类型路由索引
 
-这是供维护者和读者快速浏览的索引。Skill 运行时直接从 `SKILL.md` 读取对应专项文件，不需要先加载本索引。
+这是供维护者和读者快速浏览的索引。Skill 运行时不需要先加载本索引。
+
+领域 Playbook 必须在 Repository Map、行为链路和初始 Story Hypothesis 已形成之后使用。它们负责检查候选故事是否遗漏领域边界，不能预先规定仓库必须出现哪些熟悉技术。
+
+## 发现与选择顺序
+
+1. 使用 [repository-discovery.md](repository-discovery.md) 建立岗位无关的 Repository Map，并追踪 2–4 条行为链路。
+2. 使用 [story-selection.md](story-selection.md) 建立 Story Card，检查反证、竞争、语义去重和淘汰。
+3. 再使用 [intake-and-positioning.md](intake-and-positioning.md) 应用目标岗位和 JD。
+4. 只加载一个主 Lens；存在实习、科研或开源边界时叠加一个 Overlay。
+5. 涉及数字时读取 [claims-and-metrics.md](claims-and-metrics.md)。
+6. 最后使用 [business-story.md](business-story.md) 与 [resume-format.md](resume-format.md) 编排成品。
 
 ## 主 Lens
 
-| 项目中心问题 | 主 Lens | 读取 |
+| 已形成候选的中心问题 | 主 Lens | 读取 |
 | --- | --- | --- |
 | 业务状态、数据边界、并发、事务、缓存和异步一致性 | Java / 后端 | [playbook-backend.md](playbook-backend.md) |
 | 模型进入确定业务流程，输出如何约束和兜底 | AI 应用 | [playbook-ai-agent-rag.md](playbook-ai-agent-rag.md) |
@@ -23,11 +34,3 @@
 | 科研实习 | AI/后端专项 + 科研实习专项 | 先说明团队接口，再讲实验或工程贡献 |
 | 垂直行业 AI | AI 专项 + 对应行业事实 | 行业对象、流程和容错约束先于 AI 名词 |
 | 课程 / 竞赛项目 | 对应技术专项 | 写问题、个人负责和验收，不虚构生产规模 |
-
-## 组合规则
-
-1. 先用 [intake-and-positioning.md](intake-and-positioning.md) 确定目标岗位和项目组合。
-2. 再用 [business-story.md](business-story.md) 建立场景与候选故事。
-3. 只加载一个主 Lens；存在实习、科研或开源边界时叠加一个 Overlay。
-4. 涉及数字时读取 [claims-and-metrics.md](claims-and-metrics.md)。
-5. 最后使用 [resume-format.md](resume-format.md) 编排成品。
