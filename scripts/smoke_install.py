@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""Copy the Skill into an isolated directory and validate installed contents."""
+"""Copy the Skill into an isolated directory and validate installed contents.
+
+The public skills installer copies a Skill directory recursively. This smoke
+test mirrors that package-level behavior without requiring network access,
+while excluding repository metadata and generated caches.
+"""
 
 from __future__ import annotations
 
@@ -10,18 +15,18 @@ import tempfile
 from pathlib import Path
 
 
-PACKAGE_ENTRIES = (
-    "SKILL.md",
-    "README.md",
-    "agents",
-    "references",
-    "examples",
-    "scripts",
-    "evals",
-    "docs",
-    "showcase",
-    ".github",
-)
+EXCLUDED_NAMES = {
+    ".git",
+    ".venv",
+    "venv",
+    "node_modules",
+    "__pycache__",
+    "__pypackages__",
+    ".pytest_cache",
+    ".mypy_cache",
+    ".ruff_cache",
+    ".DS_Store",
+}
 
 
 def _load_validator(source: Path):
@@ -34,22 +39,39 @@ def _load_validator(source: Path):
     return module
 
 
+def _ignored(_directory: str, names: list[str]) -> set[str]:
+    return {
+        name
+        for name in names
+        if name in EXCLUDED_NAMES or name.endswith(".pyc")
+    }
+
+
+def _is_inside(parent: Path, child: Path) -> bool:
+    try:
+        child.relative_to(parent)
+        return True
+    except ValueError:
+        return False
+
+
 def install_skill(source: Path, destination: Path) -> dict[str, int]:
     source = source.resolve()
     destination = destination.resolve()
+
     if destination.name != "project-to-resume":
         raise ValueError("destination directory must be named 'project-to-resume'")
     if destination.exists():
         raise FileExistsError(destination)
-    destination.mkdir(parents=True)
+    if _is_inside(source, destination) or _is_inside(destination, source):
+        raise ValueError("source and destination must not overlap")
 
-    for entry in PACKAGE_ENTRIES:
-        src = source / entry
-        dst = destination / entry
-        if src.is_dir():
-            shutil.copytree(src, dst)
-        else:
-            shutil.copy2(src, dst)
+    shutil.copytree(
+        source,
+        destination,
+        ignore=_ignored,
+        symlinks=False,
+    )
 
     validator = _load_validator(destination)
     errors = validator.validate_tree(destination)
@@ -62,6 +84,16 @@ def install_skill(source: Path, destination: Path) -> dict[str, int]:
         "scripts": len(list((destination / "scripts").glob("*.py"))),
         "eval_cases": len(list((destination / "evals/cases").glob("*.yaml"))),
         "request_fixtures": len(list((destination / "evals/requests").glob("*.json"))),
+        "governance_files": sum(
+            (destination / name).exists()
+            for name in (
+                "LICENSE",
+                "CHANGELOG.md",
+                "CONTRIBUTING.md",
+                "CODE_OF_CONDUCT.md",
+                "SECURITY.md",
+            )
+        ),
     }
 
 
