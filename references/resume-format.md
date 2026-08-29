@@ -1,140 +1,125 @@
-# Resume translation and format
+# 简历成品编排与质量门
 
-The goal is not to translate internal names into polished prose. Translate a
-project abstraction into a familiar system problem, observable behavior, and an
-experiment that proves only what it actually measured.
+本文件只负责最终成品的结构、密度和投递适配。业务建模、故事筛选、指标核验和领域知识分别由其他 reference 负责。
 
-## Six-step translation
+## 1. 默认交付结构
 
-1. **Scene** — When and where does the system run?
-2. **Failure** — What concrete failure does a naive implementation create?
-3. **Observable behavior** — What does the system make true for users or other
-   components?
-4. **Baseline** — What naive design, negative invariant, or controlled treatment
-   makes the design choice testable?
-5. **Result** — Which metric corresponds to that failure?
-6. **Evidence boundary** — Which revision, workload, sample, evidence class, and
-   success gate does the result cover?
-
-Examples of useful translations:
-
-| Internal term | Familiar problem | Resume-level wording |
-| --- | --- | --- |
-| Per-session lane | Ordering and head-of-line blocking | Same-session work runs in order while independent sessions run concurrently |
-| Context curator | Fixed-capacity resource allocation | Preserve the current goal and high-value history inside a bounded context window |
-| Weighted RRF | Multi-retriever ranking | Fuse lexical and semantic candidates while measuring both recall and false injection |
-| Tool registry | API gateway and schema governance | Validate tool arguments before execution and normalize timeout/failure results |
-| Typed terminal event | Request state machine | Distinguish completion, tool failure, provider failure, cancellation, and delivery failure |
-
-## Writing rules
-
-- Start with the system problem, not a class or module name.
-- State observable behavior before internal mechanism.
-- Use at most one project-internal term and two standard technical terms per
-  bullet unless precision requires more.
-- A percentage always names its baseline. A zero always names what was counted.
-- If no valid result exists, write an architecture claim without a number.
-- Put detailed evidence boundaries in the evidence map when including them in
-  the bullet would make it unreadable.
-- JD tailoring may change ordering and vocabulary, never the underlying fact
-  set, scope, numbers, or contribution verb.
-
-## Two-version output contract
-
-Always separate what is usable now from what becomes usable after measurement.
-
-### Current evidence — evidence-ready
-
-- Use only claims and numbers that already pass the evidence and attribution
-  gates.
-- Do not include placeholders, estimates, target values, or hoped-for effects.
-- An architecture bullet without a number is valid when implementation is the
-  strongest available evidence.
-
-Use the heading:
+把可复制正文放在回答最前面：
 
 ```markdown
-## 当前证据版（证据可用）
+## 可直接粘贴的简历版本
+
+**业务/任务领域 + 核心系统对象｜角色**
+
+**技术栈：** 3–6 个真实使用、岗位相关、能够回答的核心技术
+
+**项目描述：** 1–2 句，交代场景、核心链路、系统边界和个人职责。
+
+1. 核心链路或领域建模
+2. 最关键的失败模式与设计
+3. 异常边界、一致性、可靠性或安全治理
+4. 验证、结果或真实排障（材料存在时）
 ```
 
-### Metric-enhanced — recommended target
+每个项目目标保留 3–5 条 bullet。不要把多个项目合计限制为 3–5 条，也不要为了凑数保留普通 CRUD。多项目中的次要项目不足三条时优先删除；唯一项目或用户明确要求保留时，少于三条优先于编造或重复。
 
-- Keep the same project facts and mechanisms; improve only the evidence layer.
-- Use verified metrics directly when their revision and scope match.
-- Represent missing values as named placeholders, for example
-  `[待实测：最佳单路 Recall@10]`, never as estimates.
-- Quantify only the claims whose failure mode has a meaningful metric. Not every
-  bullet needs a number.
+## 2. 项目头部
 
-If any placeholder remains, use:
+### 标题
 
-```markdown
-## 指标增强版（推荐目标，待实测，不可投递）
-```
-
-When every metric is verified and all success gates pass, remove the placeholders
-and use:
-
-```markdown
-## 指标增强版（推荐版，指标已验证）
-```
-
-“Recommended” describes the preferred evidence-backed narrative. It never makes
-an unmeasured value submit-ready and never bypasses personal attribution.
-
-## Measurement plan
-
-Every named placeholder must appear in a compact plan:
-
-```markdown
-| Claim | Values to fill | Baseline | Frozen workload and sample | Metric and success gate | Artifact |
-| --- | --- | --- | --- | --- | --- |
-| Hybrid retrieval | [待实测：最佳单路 Recall@10], [待实测：融合 Recall@10] | Best lexical or semantic source | Held-out queries at exact SHA | Recall rises; leakage and task success do not regress | Manifest + raw outcomes + aggregate |
-```
-
-The plan is part of the working evidence package, not resume prose. If the
-experiment fails its correctness or task-success gate, preserve the negative
-result and keep the current-evidence version.
-
-## Preferred project section
-
-```markdown
-Project Name | One-line interviewer-familiar positioning
-
-Core technologies: ...
-
-Project description: one compact paragraph describing the operating scene,
-main failure modes, and system boundary.
-
-1. Strongest architecture or behavior claim.
-2. Strongest verified or comparative claim.
-3. Another non-overlapping claim, or a useful negative experiment.
-```
-
-Use three to five bullets by default. Six is acceptable only when all six are
-distinct and well supported.
-
-## Evidence map
-
-Keep it outside the resume text:
-
-```markdown
-| # | Claim | Evidence | Class | Boundary |
-| --- | --- | --- | --- | --- |
-| 1 | ... | file/URL at full SHA | implementation | No performance claim |
-```
-
-If attribution is unknown, title the output `Project-level draft` and use the
-project as the grammatical subject. Convert to personal verbs only after the
-user confirms their role and disclosure rights.
-
-## Negative experiment pattern
+标题优先让招聘者一眼看懂业务或任务对象：
 
 ```text
-Evaluated [strategy] under [frozen workload]. Although [local metric] changed
-from A to B, [task-success metric] regressed from C to D; the release gate
-therefore rejected the strategy.
+拼团营销交易系统｜Java 后端开发
+面向代码仓库任务的 Agent Runtime｜Agent 工程
+技术手册 GraphRAG 问答系统｜AI 应用开发
 ```
 
-Do not say the experiment “created” a gate unless chronology proves that. It may
-have been judged by an existing gate.
+- 角色写候选人在项目中的工作身份，不冒充公司正式职级。
+- 学生项目不要借用真实大厂产品名制造从属关系。
+- “高并发、企业级、智能化、分布式”等形容词不能代替对象。
+
+### 技术栈
+
+技术进入这一行至少满足一项：位于核心链路、是岗位筛选信号、在 bullet 中有对应设计、候选人能回答原理与失败边界。
+
+- 使用中文顿号分隔，通常 3–6 个。
+- 合并同类框架，删除只在依赖文件出现的库。
+- 不把 Cursor、Claude Code 等开发辅助工具当项目技术能力。
+
+### 项目描述
+
+项目描述承担“系统是什么”，bullet 承担“我做了什么”。推荐：
+
+```text
+面向【角色】在【流程】中的【问题】，负责【本人链路】，覆盖【关键步骤】，重点处理【主要约束】。
+```
+
+项目描述已经交代的定位，不在第一条 bullet 原样重复。
+
+## 3. Bullet 密度
+
+每条采用“动作 + 对象 + 关键机制/判断 + 可观察行为”，通常一到两个分句：
+
+```text
+针对【具体失败】，通过【关键机制】处理【约束】，使【对象】进入【可观察终态】。
+```
+
+- 一个 bullet 只保留一个主结论；背景、方案、取舍、验证不必全部塞入同一句。
+- 优先 45–90 个中文字符；超过约 120 字时拆分或删除次要细节。
+- 先写业务对象和系统行为，再写必要技术；一条通常不超过 2–3 个通用技术名词。
+- 使用“负责、设计、实现、重构、优化、定位、验证”等具体动作；“主导、牵头、上线、支撑”必须有相应职责或状态来源。
+- 删除“参与了、主要负责、成功实现、有效提升、极大提高”等不增加事实的前缀。
+
+## 4. 多项目组合
+
+默认选择能形成清晰岗位画像的 1–2 个项目；第三个项目只有在增加明显能力覆盖、且版面允许时才保留。排序遵循：岗位匹配 > 责任清楚 > 技术故事 > 验证强度 > 差异化 > 时间新旧。
+
+- 第一项目负责证明岗位核心能力，前两条 bullet 必须进入主线。
+- 后续项目至少增加两个新信号；只重复 Redis、MQ、RAG 或 Tool Calling 时合并或删除。
+- 真实且相关的实习通常排在同质量个人项目之前。
+- 项目之间可以形成互补，例如“真实 AI 应用交付 + Agent Runtime”或“交易链路 + 检索系统”。
+
+## 5. JD 定制
+
+从 JD 提取 4–6 个能够由现有材料证明的能力信号，建立内部映射：
+
+```text
+JD 信号 → 对应项目 → 对应事实 → 放置位置
+```
+
+JD 只能改变项目选择、顺序、技术栈取舍和表达角度，不能新增技术、职责或结果。
+
+- 职责词优先于关键词，例如“异步任务可靠交付”比单独命中“Kafka”更重要。
+- 同一事实可以换观察角度，但不能换事实强度。
+- 如果核心 JD 信号没有材料支持，保持缺口，不用相邻技术冒充命中。
+
+## 6. 追问与版本
+
+默认只交付一个完整版本。以下情况才追加最多三个问题：
+
+- 职责归属会改变个人动词；
+- 一个强数字因口径不清被删除；
+- 缺失的业务对象或关键故障会改变项目主线；
+- 两个目标岗位会选择不同项目组合。
+
+问题必须通俗、一次只问一件事，并说明回答后能补强哪一条。不要要求用户填写审计表。
+
+只有用户明确要求不同岗位版本时，才分别输出完整版本；不要同时给“保守版、夸张版、指标占位版”。
+
+## 7. 静默质量门
+
+交付前逐项检查，不向普通用户展示：
+
+- **岗位主线**：第一项目和前两条是否直接证明目标岗位？
+- **场景完整**：招聘者能否看懂谁在什么流程中遇到什么问题？
+- **责任清楚**：项目背景、团队结果和个人动作是否分开？
+- **故事独立**：每条是否具有不同语义签名，删除后是否损失独立信号？
+- **因果成立**：技术机制是否真的处理前述失败或约束？
+- **失败边界**：核心链路是否覆盖重复、超时、部分失败、恢复或拒绝路径？
+- **验证匹配**：实现、测试、测量、上线和业务效果是否处于正确层级？
+- **数字可答**：指标对象、baseline、样本/负载和计算含义是否清楚？
+- **面试可讲**：能否解释方案选择、替代方案、代价和验证？
+- **表达干净**：是否没有占位符、审计黑话、内部类名、重复技术和营销词？
+
+任一项明显失败时，先重写、合并、降级或删除；不要靠正文后的免责声明修补。
