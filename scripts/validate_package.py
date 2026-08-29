@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Deterministic structure validation for the project-to-resume Skill package.
+"""Deterministic repository and installed-Skill validation.
 
-The checks prove package shape and local consistency only. They do not prove
-semantic story quality, model behavior, factual attribution, or resume impact.
+These checks validate structure, links and explicit contracts. They do not
+claim to measure semantic story quality, attribution correctness or resume
+outcomes.
 """
 
 from __future__ import annotations
@@ -14,19 +15,17 @@ import sys
 from pathlib import Path
 from urllib.parse import unquote
 
-
 SKILL_NAME = "project-to-resume"
+SKILL_REL = Path("skills") / SKILL_NAME
 FULL_SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 REPOSITORY_URL_RE = re.compile(r"^https://github\.com/[^/]+/[^/]+/?$")
-FIXED_GITHUB_ANCHOR_RE = re.compile(
+FIXED_ANCHOR_RE = re.compile(
     r"^https://github\.com/[^/]+/[^/]+/(?:blob|commit)/[0-9a-f]{40}(?:/.*)?$"
 )
 MARKDOWN_LINK_RE = re.compile(r"!?\[[^\]]*\]\(([^)]+)\)")
-YAML_MAPPING_RE = re.compile(r"^[^:#][^:]*:(?:\s+.*)?$")
 
-REQUIRED_PATHS = (
+SKILL_REQUIRED = (
     "SKILL.md",
-    "README.md",
     "agents/openai.yaml",
     "references/repository-discovery.md",
     "references/story-selection.md",
@@ -38,6 +37,16 @@ REQUIRED_PATHS = (
     "references/playbook-research-internship.md",
     "references/evidence-rules.md",
     "references/interview-defense.md",
+    "examples/pico-empty-response-recovery.md",
+)
+
+REPO_REQUIRED = (
+    "README.md",
+    "LICENSE",
+    "CONTRIBUTING.md",
+    "SECURITY.md",
+    ".github/workflows/validate.yml",
+    ".github/ISSUE_TEMPLATE/showcase.yml",
     "scripts/lint_examples.py",
     "scripts/validate_package.py",
     "scripts/smoke_install.py",
@@ -45,7 +54,6 @@ REQUIRED_PATHS = (
     "evals/cases/pico-empty-response-recovery.yaml",
     "evals/requests/positive-repository-role.json",
     "evals/requests/negative-code-review.json",
-    "examples/pico-empty-response-recovery.md",
 )
 
 EXPECTED_COVERAGE = {
@@ -88,133 +96,69 @@ def _frontmatter(text: str) -> dict[str, str] | None:
         end = lines.index("---", 1)
     except ValueError:
         return None
-    values: dict[str, str] = {}
+    result: dict[str, str] = {}
     for line in lines[1:end]:
         if not line.strip() or line.lstrip().startswith("#"):
             continue
         if ":" not in line:
             return None
         key, value = line.split(":", 1)
-        values[key.strip()] = value.strip().strip('"').strip("'")
-    return values
+        result[key.strip()] = value.strip().strip('"').strip("'")
+    return result
 
 
-def _validate_skill(root: Path) -> list[str]:
+def _validate_yaml_shape(path: Path, text: str, root: Path) -> list[str]:
+    rel = path.relative_to(root).as_posix()
     errors: list[str] = []
-    path = root / "SKILL.md"
-    if not path.exists():
-        return ["missing required file: SKILL.md"]
-    values = _frontmatter(_read(path))
-    if values is None:
-        return ["SKILL.md has invalid or missing YAML frontmatter"]
-    if values.get("name") != SKILL_NAME:
-        errors.append(
-            f"SKILL.md name must be '{SKILL_NAME}', got {values.get('name')!r}"
-        )
-    description = values.get("description", "")
-    if not description:
-        errors.append("SKILL.md description must be non-empty")
-    if "ordinary code review" not in description.casefold():
-        errors.append("SKILL.md description must exclude ordinary code review")
-    if root.name != SKILL_NAME:
-        errors.append(
-            f"skill directory must be named '{SKILL_NAME}', got '{root.name}'"
-        )
-    return errors
-
-
-def _validate_openai_yaml(root: Path) -> list[str]:
-    path = root / "agents/openai.yaml"
-    if not path.exists():
-        return ["missing required file: agents/openai.yaml"]
-    text = _read(path)
-    errors = _validate_yaml_shape(path, text)
-    required_patterns = {
-        "interface mapping": r"(?m)^interface:\s*$",
-        "display_name": r"(?m)^\s{2}display_name:\s*\S",
-        "short_description": r"(?m)^\s{2}short_description:\s*\S",
-        "default_prompt": r"(?m)^\s{2}default_prompt:\s*.*\$project-to-resume",
-        "policy mapping": r"(?m)^policy:\s*$",
-        "allow_implicit_invocation true": r"(?m)^\s{2}allow_implicit_invocation:\s*true\s*$",
-    }
-    for label, pattern in required_patterns.items():
-        if not re.search(pattern, text):
-            errors.append(f"agents/openai.yaml is missing {label}")
-    return errors
-
-
-def _validate_yaml_shape(path: Path, text: str) -> list[str]:
-    """Perform dependency-free, deterministic YAML sanity checks.
-
-    This is deliberately a shape check rather than a complete YAML parser. It
-    catches tabs, merge markers, malformed mapping/list lines, and block scalar
-    indentation while keeping the installed Skill free of parser dependencies.
-    """
-    errors: list[str] = []
-    rel = path.as_posix()
     if "\t" in text:
-        errors.append(f"{rel} contains a tab; YAML indentation must use spaces")
+        errors.append(f"{rel} contains a tab")
     for marker in ("<<<<<<<", "=======", ">>>>>>>"):
         if marker in text:
             errors.append(f"{rel} contains a merge-conflict marker")
 
-    block_indent: int | None = None
     bracket_balance = 0
-    for line_number, line in enumerate(text.splitlines(), start=1):
+    block_indent: int | None = None
+    for lineno, line in enumerate(text.splitlines(), start=1):
         stripped = line.strip()
         if not stripped or stripped.startswith("#"):
             continue
         indent = len(line) - len(line.lstrip(" "))
-
         if block_indent is not None:
             if indent > block_indent:
                 continue
             block_indent = None
-
         if stripped in {"---", "..."}:
             continue
-
         candidate = stripped[2:].strip() if stripped.startswith("- ") else stripped
         if not candidate:
             continue
-
         bracket_balance += candidate.count("[") + candidate.count("{")
         bracket_balance -= candidate.count("]") + candidate.count("}")
-
         if ":" in candidate:
             _, value = candidate.split(":", 1)
             if value.strip() in {"|", ">", "|-", ">-", "|+", ">+"}:
                 block_indent = indent
             continue
-
-        # Plain scalar list items such as "- showcase" are legal YAML.
         if stripped.startswith("- "):
             continue
-
-        errors.append(f"{rel}:{line_number} is not a basic YAML mapping/list line")
-
-    if block_indent is not None:
-        # An empty block scalar is legal, so no error is needed.
-        block_indent = None
-    if bracket_balance != 0:
+        errors.append(f"{rel}:{lineno} is not a basic YAML mapping/list line")
+    if bracket_balance:
         errors.append(f"{rel} has unbalanced inline YAML brackets")
     return errors
 
 
-def _validate_markdown(path: Path, root: Path) -> list[str]:
+def _validate_markdown(path: Path, boundary: Path) -> list[str]:
     text = _read(path)
-    rel = path.relative_to(root).as_posix()
+    rel = path.relative_to(boundary).as_posix()
     errors: list[str] = []
     for marker in ("<<<<<<<", "=======", ">>>>>>>"):
         if marker in text:
             errors.append(f"{rel} contains a merge-conflict marker")
-    fence_count = sum(
+    fences = sum(
         1 for line in text.splitlines() if line.lstrip().startswith(("```", "~~~"))
     )
-    if fence_count % 2:
+    if fences % 2:
         errors.append(f"{rel} has an unbalanced fenced code block")
-    if "\x00" in text:
-        errors.append(f"{rel} contains a NUL byte")
 
     for raw_target in MARKDOWN_LINK_RE.findall(text):
         target = raw_target.strip().split()[0].strip("<>")
@@ -223,56 +167,113 @@ def _validate_markdown(path: Path, root: Path) -> list[str]:
         target = unquote(target.split("#", 1)[0])
         resolved = (path.parent / target).resolve()
         try:
-            resolved.relative_to(root.resolve())
+            resolved.relative_to(boundary.resolve())
         except ValueError:
-            errors.append(f"{rel} links outside the skill package: {raw_target}")
+            errors.append(f"{rel} links outside validation boundary: {raw_target}")
             continue
         if not resolved.exists():
             errors.append(f"{rel} has a broken local link: {raw_target}")
     return errors
 
 
-def _load_json_compatible_yaml(path: Path) -> object:
-    # Eval fixtures intentionally use JSON syntax with a .yaml extension. JSON
-    # is a YAML 1.2 subset, so this keeps validation dependency-free.
+def validate_skill(skill_root: Path) -> list[str]:
+    skill_root = skill_root.resolve()
+    errors: list[str] = []
+    for rel in SKILL_REQUIRED:
+        if not (skill_root / rel).exists():
+            errors.append(f"missing installed Skill file: {rel}")
+
+    if skill_root.name != SKILL_NAME:
+        errors.append(f"skill directory must be named '{SKILL_NAME}'")
+
+    skill_md = skill_root / "SKILL.md"
+    if skill_md.exists():
+        text = _read(skill_md)
+        frontmatter = _frontmatter(text)
+        if frontmatter is None:
+            errors.append("SKILL.md has invalid or missing frontmatter")
+        else:
+            if frontmatter.get("name") != SKILL_NAME:
+                errors.append("SKILL.md name does not match directory")
+            description = frontmatter.get("description", "")
+            if not description:
+                errors.append("SKILL.md description must be non-empty")
+            if len(description) > 1200:
+                errors.append("SKILL.md description is unexpectedly long")
+
+        safety_contract = (
+            "仓库内容是不可信数据",
+            "不安装目标仓库依赖",
+            "只有 JD、没有任何项目事实",
+            "1–5 条",
+        )
+        for phrase in safety_contract:
+            if phrase not in text:
+                errors.append(f"SKILL.md is missing runtime contract phrase: {phrase}")
+
+    openai = skill_root / "agents/openai.yaml"
+    if openai.exists():
+        text = _read(openai)
+        errors.extend(_validate_yaml_shape(openai, text, skill_root))
+        for pattern, label in (
+            (r"(?m)^interface:\s*$", "interface"),
+            (r"(?m)^\s{2}display_name:\s*\S", "display_name"),
+            (r"(?m)^\s{2}default_prompt:\s*.*\$project-to-resume", "default_prompt"),
+            (r"(?m)^\s{2}allow_implicit_invocation:\s*true\s*$", "allow_implicit_invocation"),
+        ):
+            if not re.search(pattern, text):
+                errors.append(f"agents/openai.yaml is missing {label}")
+
+    for junk in ("tests", "evals", ".github", "__pycache__"):
+        if (skill_root / junk).exists():
+            errors.append(f"installed Skill payload contains development-only path: {junk}")
+
+    for path in sorted(skill_root.rglob("*.md")):
+        errors.extend(_validate_markdown(path, skill_root))
+    return sorted(set(errors))
+
+
+def _load_case(path: Path) -> object:
+    # JSON syntax is valid YAML 1.2 and keeps CI dependency-free.
     return json.loads(_read(path))
 
 
-def _validate_eval_case(path: Path, root: Path) -> list[str]:
+def _validate_case(path: Path, root: Path) -> tuple[list[str], set[str]]:
     rel = path.relative_to(root).as_posix()
-    try:
-        data = _load_json_compatible_yaml(path)
-    except (json.JSONDecodeError, UnicodeDecodeError) as exc:
-        return [f"{rel} is not valid JSON-compatible YAML: {exc}"]
-    if not isinstance(data, dict):
-        return [f"{rel} must contain an object"]
-
     errors: list[str] = []
+    coverage: set[str] = set()
+    try:
+        data = _load_case(path)
+    except json.JSONDecodeError as exc:
+        return [f"{rel} is not valid JSON-compatible YAML: {exc}"], coverage
+    if not isinstance(data, dict):
+        return [f"{rel} must contain an object"], coverage
+
     for field in EVAL_REQUIRED_FIELDS:
         if field not in data:
             errors.append(f"{rel} is missing eval field: {field}")
 
     repository = data.get("repository")
-    if isinstance(repository, dict):
+    if not isinstance(repository, dict):
+        errors.append(f"{rel} repository must be an object")
+    else:
         url = repository.get("url")
         commit = repository.get("commit")
         if not isinstance(url, str) or not REPOSITORY_URL_RE.fullmatch(url):
             errors.append(f"{rel} repository.url must be a GitHub repository URL")
         if not isinstance(commit, str) or not FULL_SHA_RE.fullmatch(commit):
-            errors.append(f"{rel} repository.commit must be a full 40-character SHA")
-    elif "repository" in data:
-        errors.append(f"{rel} repository must be an object")
+            errors.append(f"{rel} repository.commit must be a full SHA")
+
+    raw_coverage = data.get("coverage")
+    if isinstance(raw_coverage, list):
+        coverage.update(item for item in raw_coverage if isinstance(item, str))
+    else:
+        errors.append(f"{rel} coverage must be a list")
 
     for field in ("top_stories", "forbidden_claims", "evidence_anchors"):
         value = data.get(field)
         if not isinstance(value, list) or not value:
             errors.append(f"{rel} {field} must be a non-empty list")
-
-    coverage = data.get("coverage")
-    if not isinstance(coverage, list) or not coverage or not all(
-        isinstance(item, str) and item for item in coverage
-    ):
-        errors.append(f"{rel} coverage must be a non-empty list of strings")
 
     alternatives = data.get("acceptable_alternatives")
     if not isinstance(alternatives, list):
@@ -297,108 +298,48 @@ def _validate_eval_case(path: Path, root: Path) -> list[str]:
                 errors.append(f"{rel} evidence_anchors[{index}] must be an object")
                 continue
             url = anchor.get("url")
-            if not isinstance(url, str) or not FIXED_GITHUB_ANCHOR_RE.fullmatch(url):
-                errors.append(
-                    f"{rel} evidence_anchors[{index}].url must pin a full GitHub commit"
-                )
+            if not isinstance(url, str) or not FIXED_ANCHOR_RE.fullmatch(url):
+                errors.append(f"{rel} evidence anchor {index} must pin a full GitHub commit")
             if not anchor.get("supports") or not anchor.get("does_not_support"):
-                errors.append(
-                    f"{rel} evidence_anchors[{index}] must state supports and does_not_support"
-                )
+                errors.append(f"{rel} evidence anchor {index} needs supports/does_not_support")
 
-    for field in ("curated_gold", "actual_skill_run"):
-        if field in data and not isinstance(data[field], bool):
-            errors.append(f"{rel} {field} must be boolean")
+    if data.get("curated_gold") is not True:
+        errors.append(f"{rel} must explicitly mark current gold as curated")
+    if data.get("actual_skill_run") is not False:
+        errors.append(f"{rel} must not claim an actual Skill run without preserved evidence")
 
-    if data.get("curated_gold") and data.get("actual_skill_run"):
-        # This is allowed in principle, but the current repository must not blur
-        # the curated demonstration with a real forward run.
-        errors.append(
-            f"{rel} cannot mark the current curated gold as an actual skill run"
-        )
-
-    return errors
+    return errors, coverage
 
 
-def _validate_request_data(root: Path) -> list[str]:
-    request_dir = root / "evals/requests"
-    errors: list[str] = []
-    seen_true = False
-    seen_false = False
-    for path in sorted(request_dir.glob("*.json")):
-        rel = path.relative_to(root).as_posix()
-        try:
-            data = json.loads(_read(path))
-        except json.JSONDecodeError as exc:
-            errors.append(f"{rel} is invalid JSON: {exc}")
-            continue
-        if not isinstance(data, dict):
-            errors.append(f"{rel} must contain an object")
-            continue
-        for field in ("id", "should_invoke", "request", "expected_reason"):
-            if field not in data:
-                errors.append(f"{rel} is missing request field: {field}")
-        if isinstance(data.get("should_invoke"), bool):
-            seen_true |= data["should_invoke"]
-            seen_false |= not data["should_invoke"]
-        else:
-            errors.append(f"{rel} should_invoke must be boolean")
-    if not seen_true:
-        errors.append("eval request data must include at least one positive trigger")
-    if not seen_false:
-        errors.append("eval request data must include at least one negative trigger")
-    return errors
-
-
-def validate_tree(root: Path) -> list[str]:
+def validate_repository(root: Path) -> list[str]:
     root = root.resolve()
     errors: list[str] = []
 
-    for rel in REQUIRED_PATHS:
+    if (root / "SKILL.md").exists():
+        errors.append("repository root must not contain SKILL.md; use skills/project-to-resume/")
+
+    for rel in REPO_REQUIRED:
         if not (root / rel).exists():
-            errors.append(f"missing required file: {rel}")
+            errors.append(f"missing repository file: {rel}")
 
-    errors.extend(_validate_skill(root))
-    errors.extend(_validate_openai_yaml(root))
+    skill_root = root / SKILL_REL
+    errors.extend(validate_skill(skill_root))
 
-    schema_path = root / "evals/schema.json"
-    if schema_path.exists():
-        try:
-            schema = json.loads(_read(schema_path))
-            if not isinstance(schema, dict) or schema.get("type") != "object":
-                errors.append("evals/schema.json must define an object schema")
-            else:
-                required = schema.get("required")
-                if not isinstance(required, list) or not set(EVAL_REQUIRED_FIELDS).issubset(required):
-                    errors.append("evals/schema.json required fields do not cover the eval contract")
-                properties = schema.get("properties")
-                if not isinstance(properties, dict) or not set(EVAL_REQUIRED_FIELDS).issubset(properties):
-                    errors.append("evals/schema.json properties do not cover the eval contract")
-        except json.JSONDecodeError as exc:
-            errors.append(f"evals/schema.json is invalid JSON: {exc}")
+    readme = root / "README.md"
+    if readme.exists():
+        text = _read(readme)
+        if "--skill project-to-resume" not in text:
+            errors.append("README install command must select project-to-resume explicitly")
+        for stale in ("stacked Draft PR", "仍可能是 `main` 上的旧版"):
+            if stale in text:
+                errors.append(f"README contains stale pre-merge text: {stale}")
+
+    license_path = root / "LICENSE"
+    if license_path.exists() and "Apache License" not in _read(license_path):
+        errors.append("LICENSE is not recognizable as Apache-2.0")
 
     for path in sorted(root.rglob("*.md")):
         errors.extend(_validate_markdown(path, root))
-
-    case_paths = sorted((root / "evals/cases").glob("*.yaml"))
-    if len(case_paths) < 5:
-        errors.append("evals/cases must contain at least 5 representative cases")
-    seen_coverage: set[str] = set()
-    for path in case_paths:
-        errors.extend(_validate_eval_case(path, root))
-        try:
-            data = _load_json_compatible_yaml(path)
-        except (json.JSONDecodeError, UnicodeDecodeError):
-            continue
-        if isinstance(data, dict) and isinstance(data.get("coverage"), list):
-            seen_coverage.update(item for item in data["coverage"] if isinstance(item, str))
-    missing_coverage = sorted(EXPECTED_COVERAGE - seen_coverage)
-    if missing_coverage:
-        errors.append("eval cases are missing required coverage: " + ", ".join(missing_coverage))
-
-    for path in sorted(root.rglob("*.yml")) + sorted(root.rglob("*.yaml")):
-        if path.parent != root / "evals/cases":
-            errors.extend(_validate_yaml_shape(path, _read(path)))
 
     for path in sorted(root.rglob("*.json")):
         try:
@@ -406,7 +347,56 @@ def validate_tree(root: Path) -> list[str]:
         except json.JSONDecodeError as exc:
             errors.append(f"{path.relative_to(root).as_posix()} is invalid JSON: {exc}")
 
-    errors.extend(_validate_request_data(root))
+    for path in sorted(root.rglob("*.yml")) + sorted(root.rglob("*.yaml")):
+        if path.parent != root / "evals/cases":
+            errors.extend(_validate_yaml_shape(path, _read(path), root))
+
+    schema_path = root / "evals/schema.json"
+    if schema_path.exists():
+        try:
+            schema = json.loads(_read(schema_path))
+            if schema.get("type") != "object":
+                errors.append("evals/schema.json must define an object")
+            required = schema.get("required", [])
+            properties = schema.get("properties", {})
+            if not set(EVAL_REQUIRED_FIELDS).issubset(required):
+                errors.append("eval schema required fields do not cover the contract")
+            if not set(EVAL_REQUIRED_FIELDS).issubset(properties):
+                errors.append("eval schema properties do not cover the contract")
+        except json.JSONDecodeError as exc:
+            errors.append(f"evals/schema.json is invalid JSON: {exc}")
+
+    case_paths = sorted((root / "evals/cases").glob("*.yaml"))
+    if len(case_paths) < 5:
+        errors.append("evals/cases must contain at least 5 cases")
+    seen_coverage: set[str] = set()
+    for path in case_paths:
+        case_errors, coverage = _validate_case(path, root)
+        errors.extend(case_errors)
+        seen_coverage.update(coverage)
+    missing = EXPECTED_COVERAGE - seen_coverage
+    if missing:
+        errors.append("eval coverage missing: " + ", ".join(sorted(missing)))
+
+    request_paths = sorted((root / "evals/requests").glob("*.json"))
+    positive = negative = False
+    for path in request_paths:
+        try:
+            data = json.loads(_read(path))
+        except json.JSONDecodeError:
+            continue
+        if not isinstance(data, dict):
+            errors.append(f"{path.relative_to(root).as_posix()} must contain an object")
+            continue
+        for field in ("id", "should_invoke", "request", "expected_reason"):
+            if field not in data:
+                errors.append(f"{path.relative_to(root).as_posix()} is missing {field}")
+        if isinstance(data.get("should_invoke"), bool):
+            positive |= data["should_invoke"]
+            negative |= not data["should_invoke"]
+    if not positive or not negative:
+        errors.append("request fixtures must include positive and negative triggers")
+
     return sorted(set(errors))
 
 
@@ -414,13 +404,12 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("root", nargs="?", type=Path, default=Path(__file__).parents[1])
     args = parser.parse_args()
-
-    errors = validate_tree(args.root)
+    errors = validate_repository(args.root)
     for error in errors:
         print(error, file=sys.stderr)
     if errors:
         return 1
-    print("package structure valid (deterministic checks only)")
+    print("repository and installed Skill contracts valid (deterministic checks only)")
     return 0
 
 

@@ -1,0 +1,6 @@
+{
+  "id": "positive-jd-only-needs-project",
+  "should_invoke": true,
+  "request": "使用 project-to-resume，按这个 JD 给我生成一段项目经历，但我还没提供项目仓库、项目说明或现有简历。",
+  "expected_reason": "应触发 Skill，但必须请求项目事实，不能从 JD 反向创造经历"
+}

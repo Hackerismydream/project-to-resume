@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Copy the Skill into an isolated directory and validate installed contents."""
+"""Copy only the runtime Skill payload into an isolated directory and validate it."""
 
 from __future__ import annotations
 
@@ -9,23 +9,11 @@ import shutil
 import tempfile
 from pathlib import Path
 
-
-PACKAGE_ENTRIES = (
-    "SKILL.md",
-    "README.md",
-    "agents",
-    "references",
-    "examples",
-    "scripts",
-    "evals",
-    "docs",
-    "showcase",
-    ".github",
-)
+SKILL_NAME = "project-to-resume"
 
 
-def _load_validator(source: Path):
-    script = source / "scripts/validate_package.py"
+def _load_validator(repo_root: Path):
+    script = repo_root / "scripts/validate_package.py"
     spec = importlib.util.spec_from_file_location("validate_package", script)
     if spec is None or spec.loader is None:
         raise RuntimeError(f"cannot load validator: {script}")
@@ -35,33 +23,28 @@ def _load_validator(source: Path):
 
 
 def install_skill(source: Path, destination: Path) -> dict[str, int]:
-    source = source.resolve()
+    repo_root = source.resolve()
+    skill_source = repo_root / "skills" / SKILL_NAME
     destination = destination.resolve()
-    if destination.name != "project-to-resume":
-        raise ValueError("destination directory must be named 'project-to-resume'")
+
+    if not skill_source.is_dir():
+        raise FileNotFoundError(skill_source)
+    if destination.name != SKILL_NAME:
+        raise ValueError(f"destination directory must be named '{SKILL_NAME}'")
     if destination.exists():
         raise FileExistsError(destination)
-    destination.mkdir(parents=True)
 
-    for entry in PACKAGE_ENTRIES:
-        src = source / entry
-        dst = destination / entry
-        if src.is_dir():
-            shutil.copytree(src, dst)
-        else:
-            shutil.copy2(src, dst)
-
-    validator = _load_validator(destination)
-    errors = validator.validate_tree(destination)
+    shutil.copytree(skill_source, destination)
+    validator = _load_validator(repo_root)
+    errors = validator.validate_skill(destination)
     if errors:
-        raise RuntimeError("installed package validation failed:\n" + "\n".join(errors))
+        raise RuntimeError("installed Skill validation failed:\n" + "\n".join(errors))
 
     return {
+        "files": sum(1 for path in destination.rglob("*") if path.is_file()),
         "references": len(list((destination / "references").glob("*.md"))),
         "examples": len(list((destination / "examples").glob("*.md"))),
-        "scripts": len(list((destination / "scripts").glob("*.py"))),
-        "eval_cases": len(list((destination / "evals/cases").glob("*.yaml"))),
-        "request_fixtures": len(list((destination / "evals/requests").glob("*.json"))),
+        "agent_configs": len(list((destination / "agents").glob("*.yaml"))),
     }
 
 
@@ -73,15 +56,14 @@ def main() -> int:
 
     if args.destination:
         summary = install_skill(args.source, args.destination)
-        print(f"isolated install valid: {args.destination.resolve()}")
-        print(" ".join(f"{key}={value}" for key, value in summary.items()))
-        return 0
+        print(f"isolated Skill install valid: {args.destination.resolve()}")
+    else:
+        with tempfile.TemporaryDirectory(prefix="project-to-resume-smoke-") as temp_dir:
+            destination = Path(temp_dir) / SKILL_NAME
+            summary = install_skill(args.source, destination)
+            print("isolated Skill install valid: temporary project-to-resume directory")
 
-    with tempfile.TemporaryDirectory(prefix="project-to-resume-smoke-") as temp_dir:
-        destination = Path(temp_dir) / "project-to-resume"
-        summary = install_skill(args.source, destination)
-        print("isolated install valid: temporary project-to-resume directory")
-        print(" ".join(f"{key}={value}" for key, value in summary.items()))
+    print(" ".join(f"{key}={value}" for key, value in summary.items()))
     return 0
 
 

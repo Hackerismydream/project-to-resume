@@ -1,0 +1,25 @@
+name: Feature request
+description: Propose a focused improvement to repository-to-resume behavior
+title: "[Feature] "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: failure
+    attributes:
+      label: What concrete failure or limitation does this solve?
+      description: Prefer a real repository scenario over a generic feature list.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: Explain the smallest change that would improve repository discovery, story selection, evidence boundaries or usability.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Example / evidence
+      description: Public repository + fixed commit is ideal. Do not include sensitive material.
